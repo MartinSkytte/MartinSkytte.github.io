@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Part 4: IDV Chapter 5</title>
+        <script type="text/javascript" src="js/d3.min.js"></script>
+        <style type="text/css">
+            html, body {
+                font-family: Helvetica, Arial, Verdana, sans-serif;
+                font-weight: bold;
+            }
+
+            body {
+                font-size: 14px;
+                line-height: 1.42857143;
+                color: #333;
+                background-color: #fff;
+            }
+
+            html {
+                -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            }
+
+            svg {
+                font: 10px sans-serif;
+            }
+
+            text {
+                font: 10px sans-serif;
+            }
+
+            .axis path {
+                fill: none;
+                stroke: none;
+            }
+
+            .axis line {
+                fill: none;
+                stroke: black;
+                shape-rendering: crispEdges;
+            }
+
+            .axis text {
+                font-family: sans-serif;
+                font-size: 11px;
+            }
+            /*
+                        .svg-container {
+                            display: inline-block;
+                            position: relative;
+                            vertical-align: middle;
+                            overflow: hidden;
+                        }
+            */
+            .tooltip {
+                position: absolute;
+                width: 250px;
+                height: auto;
+                padding: 10px;
+                color: #fff;
+                background: #000;
+                z-index: 80;
+            }
+
+            .tooltip.hidden {
+                display: none;
+            }
+
+            .tooltip p {
+                margin: 0;
+                font-family: sans-serif;
+                font-size: 16px;
+                line-height: 20px;
+            }
+
+            #tooltip-vis-one #district {
+                margin: 0;
+                padding: 0;
+            }
+
+            /* make grid system */
+            .container {
+                width: 1300px;
+                padding-right: 15px;
+                padding-left: 15px;
+                margin-right: auto;
+                margin-left: auto;
+            }
+
+            .row {
+                margin-right: -15px;
+                margin-left: -15px;
+            }
+
+            .container:before,
+            .container:after,
+            .row:before,
+            .row:after {
+                display: table;
+                content: " ";
+            }
+
+            .row:after {
+                clear: both;
+            }
+
+            .col-left {
+                padding-left: 10px;
+                padding-right: 10px;
+                float: left;
+                width: 300px;
+            }
+
+            .col-right {
+                padding-left: 10px;
+                padding-right: 10px;
+                padding-top: 30px;
+                float: left;
+                width: 990px;
+            }
+
+            .btn {
+                background-color: #337ab7;
+                border-color: #2e6da4;
+                color: #fff;
+                display: inline-block;
+                padding: 6px 12px;
+                margin-bottom: 0;
+                font-size: 14px;
+                font-weight: normal;
+                line-height: 1.42857143;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: middle;
+                -ms-touch-action: manipulation;
+                touch-action: manipulation;
+                cursor: pointer;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                background-image: none;
+                border: 1px solid transparent;
+                border-radius: 4px;
+            }
+            .btn:focus,
+            .btn:active:focus,
+            .btn.active:focus,
+            .btn.focus,
+            .btn:active.focus,
+            .btn.active.focus {
+                outline: thin dotted;
+                outline: 5px auto -webkit-focus-ring-color;
+                outline-offset: -2px;
+            }
+            .btn:hover,
+            .btn:focus,
+            .btn.focus {
+                background-color: #286090;
+                border-color: #122b40;
+                text-decoration: none;
+            }
+            .btn:active,
+            .btn.active {
+                background-color: #286090;
+                border-color: #204d74;
+                background-image: none;
+                outline: 0;
+                -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+                box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+            }
+
+            .pull-left {
+                float:left;
+            }
+
+            .pull-right {
+                float:right;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-left">
+                    <h1>Assignment 2B: One scatter plot two datasets</h1>
+                    <p>The graph on the right shows the prostitution and the vehicle theft by
+                        district in San Francisco.</p>
+                    <p>By clicking on the buttons below you can choose, to see how the crime
+                        changes between the years. For further information click on the 
+                        circles in the diagram</p>
+                    <a class="btn" id="show2003">2003</a>
+                    <a class="btn" id="show2015">2015</a>
+                </div>
+                <div class="col-right">
+                    <div id="visualization-one" class="svg-container">
+
+                    </div>
+                    <div id="tooltip-vis-one" class="tooltip hidden">
+                        <h3 id="district"></h3>
+                        <p><span id="value"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+            var dataset = [];
+
+            // sizes
+            var padding = 50;
+            var h = 500;
+            var w = 1000;
+
+            var scaleVisOneX;
+            var scaleVisOneY;
+
+            // set up image and prep it for responsiveness
+            var svg = d3.select("#visualization-one")
+                    .append("svg")
+                    .attr("id", "vis-one")
+                    .attr("viewBox", "0 0 " + w + " " + h)
+                    .attr("perserveAspectRatio", "xMinYMid");
+
+
+
+            svg.on("click", function () {
+                d3.select("#tooltip-vis-one").classed("hidden", true);
+            });
+
+            // set title
+            svg.append("text")
+                    .attr("id", "title")
+                    .attr("x", (w / 2))
+                    .attr("y", 35)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "30px")
+                    .text("Crime for Year 2003");
+
+            // setup x label
+            svg.append("text")
+                    .attr("class", "x label")
+                    .attr("text-anchor", "end")
+                    .attr("x", w)
+                    .attr("y", h - 6)
+                    .text("PROSTITUTION");
+
+            // setup y label
+            svg.append("text")
+                    .attr("class", "y label")
+                    .attr("text-anchor", "end")
+                    .attr("y", 6)
+                    .attr("dy", ".75em")
+                    .attr("transform", "rotate(-90)")
+                    .text("VEHICLE THEFT");
+
+            // setup x axis
+            svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + (h - padding) + ")");
+
+            // setup y axis
+            svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + padding + ",0)");
+
+            scaleVisOneX = d3.scale.linear()
+                    .range([padding, w - padding * 2]);
+
+            scaleVisOneY = d3.scale.linear()
+                    .range([h - padding, padding]);
+
+            scaleVisOneColor = d3.scale.linear()
+                    .range([20, 255]);
+
+            function createGraph(dataset) {
+
+                scaleVisOneX.domain([0, d3.max(dataset, function (d) {
+                        return +d['PROSTITUTION'];
+                    })]);
+
+                scaleVisOneY.domain([0, d3.max(dataset, function (d) {
+                        return +d['VEHICLE THEFT'];
+                    })]);
+
+                scaleVisOneColor.domain([d3.min(dataset, function (d) {
+                        return (+d['PROSTITUTION'] + +d['VEHICLE THEFT']);
+                    }), d3.max(dataset, function (d) {
+                        return (+d['PROSTITUTION'] + +d['VEHICLE THEFT']);
+                    })])
+                        .range([20, 255]);
+
+                svg.selectAll("g.x.axis").transition().duration(500).call(d3.svg.axis()
+                        .scale(scaleVisOneX)
+                        .orient("bottom"));
+
+                svg.selectAll("g.y.axis").transition().duration(500).call(d3.svg.axis()
+                        .scale(scaleVisOneY)
+                        .orient("left"));
+
+                var districts = svg.selectAll("g.node")
+                        .data(dataset, function (d) {
+                            return d.district;
+                        });
+
+                var districtEnter = districts.enter()
+                        .append("g")
+                        .attr("class", "node")
+                        .attr('transform', function (d) {
+                            return "translate(" + scaleVisOneX(d['PROSTITUTION']) + "," + scaleVisOneY(d['VEHICLE THEFT']) + ")";
+                        });
+
+                districtEnter.append("circle")
+                        .attr("r", function (d) {
+                            var val = d['PROSTITUTION'] + d['VEHICLE THEFT'];
+                            return (val / d['total']) * 100;
+                        })
+                        .attr("fill", function (d) {
+                            var val = Math.round(scaleVisOneColor(d['PROSTITUTION'] + d['VEHICLE THEFT']));
+                            return "rgb(0, " + val + ", " + val + ")";
+                        });
+
+                districtEnter.append("text")
+                        .style("text-anchor", "middle")
+                        .attr("dy", function (d) {
+                            val = ((d['PROSTITUTION'] + d['VEHICLE THEFT']) / d['total']) * 100;
+                            return (val * -1);
+                        })
+                        .text(function (d) {
+                            return d['district'];
+                        });
+
+                districtEnter.style("opacity", 0)
+                        .transition()
+                        .duration(1000)
+                        .style("opacity", 1);
+
+                districts.transition()
+                        .style("opacity", 1)
+                        .duration(1000)
+                        .attr('transform', function (d) {
+                            return "translate(" + scaleVisOneX(d['PROSTITUTION']) + "," + scaleVisOneY(d['VEHICLE THEFT']) + ")";
+                        });
+
+                districts
+                        .on('click', function (d) {
+
+                            // Update the tooltip position and value
+                            d3.select("#tooltip-vis-one")
+                                    .style("left", (d3.event.pageX + 5) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px")
+                                    .select("#value")
+                                    .html(
+                                            "Prostitution: " + d['PROSTITUTION'] + "<br/>" +
+                                            "Vehicle Theft: " + d['VEHICLE THEFT'] + "<br/>" +
+                                            "Total Crimes in District: " + d['total'] + "<br/>" +
+                                            "Which corresponds to " + (((d['PROSTITUTION'] + d['VEHICLE THEFT']) / d['total']) * 100).toFixed(2) + "% of crime in the district, " +
+                                            "is either prostitution or vehicle theft in the choosen year"
+                                            );
+                            d3.select("#tooltip-vis-one")
+                                    .select("#district")
+                                    .html("Crimes in " + d['district'].toLowerCase());
+
+                            // hide show tooltip
+                            if (d3.select("#tooltip-vis-one").classed("hidden") || lastTooltipVisOne !== d['district']) {
+                                d3.select("#tooltip-vis-one").classed("hidden", false);
+                            } else {
+                                d3.select("#tooltip-vis-one").classed("hidden", true);
+                            }
+
+                            lastTooltipVisOne = d['district'];
+                            d3.event.stopPropagation();
+                        })
+
+                districts.exit().remove();
+            }
+
+            function generateData(data) {
+                dataset = [];
+                for (i = 0; i < data.length; i++) {
+                    index = listObjectContainsDistrict(dataset, data[i]['district']);
+
+                    // if index is not null
+                    if (index !== null) {
+                        var tmp = dataset[index];
+                        tmp[data[i]['crime']] = +data[i]['amount'];
+                        dataset[index] = tmp;
+                    } else {
+                        var obj = {'district': data[i]['district']};
+                        obj[data[i]['crime']] = +data[i]['amount'];
+                        obj['total'] = data[i]['total'];
+                        dataset.push(obj);
+                    }
+                }
+            }
+
+            function listObjectContainsDistrict(list, value) {
+                var index = null;
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i]['district'] === value) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                return index;
+            }
+
+            d3.select("#show2003")
+                    .on("click", function () {
+                        d3.select("#vis-one")
+                                .select("#title")
+                                .transition()
+                                .duration(500)
+                                .style("opacity", 0)
+                                .transition()
+                                .duration(500)
+                                .text("Crime for year 2003")
+                                .style("opacity", 1);
+
+                        scatterPlot('prostitution_vehicle2003.csv');
+                    });
+
+            d3.select("#show2015")
+                    .on("click", function () {
+                        d3.select("#vis-one")
+                                .select("#title")
+                                .transition()
+                                .duration(500)
+                                .style("opacity", 0)
+                                .transition()
+                                .duration(500)
+                                .text("Crime for year 2015")
+                                .style("opacity", 1);
+
+                        scatterPlot('prostitution_vehicle2015.csv');
+                    });
+
+
+            function scatterPlot(file) {
+                console.log(file);
+                d3.csv(file, function (data) {
+                    generateData(data);
+                    createGraph(dataset);
+                });
+            }
+
+            scatterPlot('prostitution_vehicle2003.csv');
+        </script>
+
+    </body>
+</html>

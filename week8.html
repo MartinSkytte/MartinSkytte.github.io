@@ -174,7 +174,7 @@
 
                 // prepare title
                 var text = svg.selectAll("text")
-                        .data(dataContainer, function(d) {
+                        .data(dataContainer, function (d) {
                             return d;
                         });
 
@@ -189,7 +189,7 @@
                         .attr("text-anchor", "middle")
                         .style("font-size", "30px")
                         .text("Showing for k" + data);
-                
+
                 // remove title
                 text.exit().remove();
 
@@ -222,6 +222,7 @@
                 var centerPoints = svg.selectAll(".centers")
                         .data(centerContainer[data])
                         .attr("cx", function (d) {
+                            console.log(d);
                             return projection([+d.X, +d.Y])[0];
                         })
                         .attr("cy", function (d) {
@@ -283,6 +284,7 @@
                             return projection([+d.X, +d.Y])[0];
                         })
                         .attr("cy", function (d) {
+
                             return projection([+d.X, +d.Y])[1];
                         })
                         .attr("r", 15)
@@ -323,38 +325,55 @@
 
             // setup the data structure
             function generateData(data) {
-                var tmp = {};
+                var center = "";
                 for (var i = 0; i < data.length; i++) {
-                    var cluster = data[i]['Clusters'];
-                    var labels = {};
-                    var obj = {};
-                    if (tmp[data[i]['X'] + "," + data[i]['Y']]) {
-                        obj = tmp[data[i]['X'] + "," + data[i]['Y']];
-                        labels = obj['Labels'];
-                        labels[cluster] = data[i]['Label'];
-                    } else {
-                        labels[cluster] = data[i]['Label'];
-                        obj = {"X": data[i]['X'], "Y": data[i]['Y']};
+                    var tmp = {"X": data[i]['X'], "Y": data[i]['Y']};
+                    var labels = JSON.parse(data[i]['Labels']);
+                    tmp['Labels'] = labels;
+                    dataContainer.push(tmp);
+
+                    if (center === "") {
+                        center = JSON.parse(data[i]['Centers']);
                     }
+                    /*                    
+                     if (!centerContainer[data[i]['Clusters']] || centerContainer[data[i]['Clusters']].length !== +centerContainer[data[i]['Clusters']]) {
+                     if (centerContainer[data[i]['Clusters']]) {
+                     if (!containsLabel(centerContainer[data[i]['Clusters']], data[i]['Label'])) {
+                     centerContainer[data[i]['Clusters']].push({"Label": data[i].Label, "X": data[i].CenterX, "Y": data[i].CenterY});
+                     }
+                     } else {
+                     centerContainer[data[i]['Clusters']] = [{"Label": data[i].Label, "X": data[i].CenterX, "Y": data[i].CenterY}];
+                     }
+                     }
+                     */
 
-                    obj['Labels'] = labels;
-                    tmp[data[i]['X'] + "," + data[i]['Y']] = obj;
+                }
 
-                    if (!centerContainer[data[i]['Clusters']] || centerContainer[data[i]['Clusters']].length !== +centerContainer[data[i]['Clusters']]) {
-                        if (centerContainer[data[i]['Clusters']]) {
-                            if (!containsLabel(centerContainer[data[i]['Clusters']], data[i]['Label'])) {
-                                centerContainer[data[i]['Clusters']].push({"Label": data[i].Label, "X": data[i].CenterX, "Y": data[i].CenterY});
+                var containerKeys = Object.keys(center);
+                for (var i = 0; i < containerKeys.length; i++) {
+                    keys = Object.keys(center[containerKeys[i]]);
+                    for (var j = 0; j < keys.length; j++) {
+                        
+                        if (centerContainer[containerKeys[i]]) {
+                            if (!containsLabel(centerContainer[containerKeys[i]], keys[j])) {
+                                centerContainer[containerKeys[i]].push({"Label": keys[j], "X": center[containerKeys[i]][keys[j]].X, "Y": center[containerKeys[i]][keys[j]].Y});
                             }
                         } else {
-                            centerContainer[data[i]['Clusters']] = [{"Label": data[i].Label, "X": data[i].CenterX, "Y": data[i].CenterY}];
+                            centerContainer[containerKeys[i]] = [{"Label": keys[j], "X": center[containerKeys[i]][keys[j]].X, "Y": center[containerKeys[i]][keys[j]].Y}];
                         }
+
+                        /*
+                         if (centerContainer[data[i]['Clusters']]) {
+                         if (!containsLabel(centerContainer[data[i]['Clusters']], data[i]['Label'])) {
+                         centerContainer[data[i]['Clusters']].push({"Label": data[i].Label, "X": data[i].CenterX, "Y": data[i].CenterY});
+                         }
+                         } else {
+                         centerContainer[data[i]['Clusters']] = [{"Label": data[i].Label, "X": data[i].CenterX, "Y": data[i].CenterY}];
+                         }
+                         */
                     }
                 }
-
-                for (var data in tmp) {
-                    dataContainer.push(tmp[data]);
-                }
-
+                console.log(centerContainer);
                 setupButtons(Object.keys(centerContainer).sort());
             }
 
