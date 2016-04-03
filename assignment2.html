@@ -177,6 +177,15 @@
             .pull-right {
                 float:right;
             }
+
+            .margin-5 {
+                margin: 5px;
+            }
+
+            .center-text {
+                text-align: center;
+            }
+
         </style>
     </head>
     <body>
@@ -246,8 +255,8 @@
         <div class="container">
             <h2>Assignment 2D: Visualizing geodata</h2>
             <p>Here is a scatter plot showing the k mean, of the prostitution in San Francisco.
-            If you click on a button it will activate a new layout with another k mean. When 
-            hovering over a button it shows a preview of the data directly on the map.
+                If you click on a button it will activate a new layout with another k mean. When 
+                hovering over a button it shows a preview of the data directly on the map.
             </p>
             <p>Answering side questions, the reason for making file sizes as small as possible,
                 is that a user of the website has to download the data, and the website will be
@@ -919,12 +928,14 @@
                     .attr("id", "sfmap")
                     .attr("width", width)
                     .attr("height", height);
+            
+            var countourG = svgmap.append("g");
 
             //Load in GeoJSON data
             d3.json("sfpddistricts.json", function (json) {
 
                 //Bind data and create one path per GeoJSON feature
-                svgmap.selectAll("path")
+                countourG.selectAll("path")
                         .data(json.features)
                         .enter()
                         .append("path")
@@ -1144,7 +1155,7 @@
                 for (var i = 0; i < containerKeys.length; i++) {
                     keys = Object.keys(center[containerKeys[i]]);
                     for (var j = 0; j < keys.length; j++) {
-                        
+
                         if (centerContainer[containerKeys[i]]) {
                             if (!containsLabel(centerContainer[containerKeys[i]], keys[j])) {
                                 centerContainer[containerKeys[i]].push({"Label": keys[j], "X": center[containerKeys[i]][keys[j]].X, "Y": center[containerKeys[i]][keys[j]].Y});
