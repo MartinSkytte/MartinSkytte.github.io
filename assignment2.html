@@ -186,6 +186,10 @@
                 text-align: center;
             }
 
+            .left-text {
+                text-align: left;
+            }
+
             .margin-top50 {
                 margin-top: 50px;
             }
@@ -198,22 +202,24 @@
         <div class="container center-text">
             <h2>Assignment 2A: Simple SVG Stuff</h2>
             <p>Here we see some simple exercises, where a svg image is made. Afterwards a simple javascript using the D3 liberary is doing some of the 5 table</p>
-            <svg width="500" height="100">
-            <rect x="0" y="20" width="80" height="80" fill="purple" stroke="gray" stroke-width="2" fill-opacity="0.9"/>
-            <rect x="20" y="15" width="80" height="80" fill="blue" stroke="gray" stroke-width="2" fill-opacity="0.8"/>
-            <rect x="40" y="10" width="80" height="80" fill="green" stroke="gray" stroke-width="2" fill-opacity="0.6"/>
-            <rect x="60" y="5" width="80" height="80" fill="yellow" stroke="gray" stroke-width="2" fill-opacity="0.4"/>
-            <rect x="80" y="0" width="80" height="80" fill="red" stroke="gray" stroke-width="2" fill-opacity="0.2"/>
-            </svg>
-            <div id="counter">
+            <div  class="left-text">
+                <svg width="500" height="100">
+                <rect x="0" y="20" width="80" height="80" fill="purple" stroke="gray" stroke-width="2" fill-opacity="0.9"/>
+                <rect x="20" y="15" width="80" height="80" fill="blue" stroke="gray" stroke-width="2" fill-opacity="0.8"/>
+                <rect x="40" y="10" width="80" height="80" fill="green" stroke="gray" stroke-width="2" fill-opacity="0.6"/>
+                <rect x="60" y="5" width="80" height="80" fill="yellow" stroke="gray" stroke-width="2" fill-opacity="0.4"/>
+                <rect x="80" y="0" width="80" height="80" fill="red" stroke="gray" stroke-width="2" fill-opacity="0.2"/>
+                </svg>
+                <div id="counter">
 
+                </div>
             </div>
         </div>
 
         <div class="container margin-top50 center-text">
             <h2>Assignment 2B: One scatter plot two datasets</h2>
             <div class="row">
-                <div class="col-left">
+                <div class="col-left left-text">
                     <p>The graph on the right shows the prostitution and the vehicle theft by
                         district in San Francisco.</p>
                     <p>By clicking on the buttons below you can choose, to see how the crime
@@ -257,7 +263,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="container margin-top50 center-text">
             <h2>Assignment 2D: Visualizing geodata</h2>
             <p>Here is a scatter plot showing the k mean, of the prostitution in San Francisco.
@@ -934,7 +940,7 @@
                     .attr("id", "sfmap")
                     .attr("width", width)
                     .attr("height", height);
-            
+
             var countourG = svgmap.append("g");
 
             //Load in GeoJSON data
