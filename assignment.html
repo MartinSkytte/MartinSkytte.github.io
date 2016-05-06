@@ -42,6 +42,7 @@
                     <div id="dod-mapFrame">
                 <![endif]-->  
                 <![if !IE]><div id="dod-mapFrame"><![endif]>
+                    <span id="loading" class="glyphicon glyphicon-refresh">Loading... data</span>
                     <div id="dod-chart">
                         <div id="dod-tooltip">
                             <div id="dod-tooltipContainer">
@@ -82,6 +83,20 @@
                     mapProjection: d3.geo.conicConformal().scale(10300).center([11, 56.3]),
                     mapPath: {},
                     mapCountour: {},
+                    municipality_arry: [],
+                    municipality_data_arry: [],
+                    current_year: "2010",
+                    years: ["2010", "2013"],
+                    maxValueForYear: function (year) {
+                        var that = this;
+                        return d3.max(this.municipality_arry, function (data) {
+                            if ("" + year === that.current_year) {
+
+                                return data.count;
+                            }
+                            return 0;
+                        });
+                    },
                     init: function () {
                         var that = this;
                         this.svg = d3.select("#dod-mapCanvas")
@@ -97,8 +112,20 @@
                         this.mapCountour = this.svg
                                 .append("g")
                                 .attr("id", "mapCountour");
+
+                        d3.json('js/kommune.json', function (data) {
+                            that.municipality_arry = data;
+                        });
+
+                        d3.json('js/data.json', function (data) {
+                            that.municipality_data_arry = data;
+                            $j("#loading").hide();
+                        });
+
                         //Load in GeoJSON data
                         d3.json("js/kommuner.geojson", function (json) {
+
+                            console.log(that);
 
                             //Bind data and create one path per GeoJSON feature
                             that.mapCountour.selectAll("path")
@@ -146,6 +173,18 @@
                     }
                 };
             };
+
+            dod.Data = function () {
+                return {
+                    municipality_arry: [],
+                    municipality_data_arry: [],
+                    init: function () {
+                        var that = this;
+
+                    }
+                };
+            };
+
             dod.ready = function () {
                 dod.m = new dod.Map();
                 dod.m.init();
