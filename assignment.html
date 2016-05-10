@@ -83,13 +83,16 @@
                     mapProjection: d3.geo.conicConformal().scale(10300).center([11, 56.3]),
                     mapPath: {},
                     mapCountour: {},
-                    municipality_arry: [],
-                    municipality_data_arry: [],
+                    municipality_array: [],
+                    municipality_data_array: [],
+                    toilet_types: {"1": "Toilet in dwelling", "2": "Other/no toilet", "3": "Toilet outside dwelling"},
+                    housing_types: {"1": "Detached houses/farmhouses", "2": "Terraced, linked or semi-detached houses", "3": "Multi-dwelling houses"},
+                    bath_types: {"1": "Bathroom in dwelling", "2": "No bathroom or access to bathroom", "3": "Access to bathroom"},
                     current_year: "2010",
                     years: ["2010", "2013"],
                     maxValueForYear: function (year) {
                         var that = this;
-                        return d3.max(this.municipality_arry, function (data) {
+                        return d3.max(this.municipality_array, function (data) {
                             if ("" + year === that.current_year) {
 
                                 return data.count;
@@ -113,20 +116,28 @@
                                 .append("g")
                                 .attr("id", "mapCountour");
 
-                        d3.json('js/kommune.json', function (data) {
-                            that.municipality_arry = data;
-                        });
+                        this.loadMunicipality();
 
-                        d3.json('js/data.json', function (data) {
-                            that.municipality_data_arry = data;
-                            $j("#loading").hide();
+                    },
+                    loadMunicipality: function () {
+                        var that = this;
+                        d3.json('js/IkkeOpdelt(1).json', function (data) {
+                            that.municipality_array = data;
+                            that.loadData();
                         });
+                    },
+                    loadData: function () {
+                        var that = this;
 
+                        d3.json('js/Opdelt.json', function (data) {
+                            that.municipality_data_array = data;
+                            that.loadGeo();
+                        });
+                    },
+                    loadGeo: function () {
+                        var that = this;
                         //Load in GeoJSON data
                         d3.json("js/kommuner.geojson", function (json) {
-
-                            console.log(that);
-
                             //Bind data and create one path per GeoJSON feature
                             that.mapCountour.selectAll("path")
                                     .data(json.features)
@@ -162,6 +173,8 @@
                                         d3.select("#dod-tooltip")
                                                 .style('display', 'none');
                                     });
+
+                            that.$j("#loading").hide();
                         });
                     },
                     zoomMap: function () {
@@ -176,8 +189,8 @@
 
             dod.Data = function () {
                 return {
-                    municipality_arry: [],
-                    municipality_data_arry: [],
+                    municipality_array: [],
+                    municipality_data_array: [],
                     init: function () {
                         var that = this;
 
