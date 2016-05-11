@@ -44,16 +44,37 @@
                 <![if !IE]><div id="dod-mapFrame"><![endif]>
                     <span id="loading" class="glyphicon glyphicon-refresh">Loading... data</span>
                     <div id="dod-chart">
-                        <div id="dod-tooltip">
+                        <div class="text-center">
+                            <div class="btn-group center-block" role="group" id="years">
+
+                            </div>
+                        </div>
+
+                        <!--<div id="dod-tooltip">
                             <div id="dod-tooltipContainer">
                                 <div class="dod-name"></div>
                                 <div class="dod-code"></div>
-                                <div class="dod-tail"></div>
+                            </div>
+                        </div>-->
+                        <div id="dod-mapCanvas">
+                            <div id="dod-tooltip" class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title dod-name"></h3>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="xs-col-6 text-uppercase text-bold">Municipality</div>
+                                    <div id="dod-municipality" class="xs-col-6"></div>
+                                    <div class="xs-col-6 text-uppercase text-bold">Total Children</div>
+                                    <div id="dod-children" class="xs-col-6"></div>
+                                </div>
                             </div>
                         </div>
-                        <div id="dod-mapCanvas"></div>
+                        <div class="panel">
+
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -88,8 +109,9 @@
                     toilet_types: {"1": "Toilet in dwelling", "2": "Other/no toilet", "3": "Toilet outside dwelling"},
                     housing_types: {"1": "Detached houses/farmhouses", "2": "Terraced, linked or semi-detached houses", "3": "Multi-dwelling houses"},
                     bath_types: {"1": "Bathroom in dwelling", "2": "No bathroom or access to bathroom", "3": "Access to bathroom"},
+                    current_data: [],
                     current_year: "2010",
-                    years: ["2010", "2013"],
+                    years: ["2010", "2011", "2012", "2013", "2014", "2015"],
                     maxValueForYear: function (year) {
                         var that = this;
                         return d3.max(this.municipality_array, function (data) {
@@ -121,6 +143,7 @@
                     },
                     loadMunicipality: function () {
                         var that = this;
+                        this.setupButtons();
                         d3.json('js/IkkeOpdelt(1).json', function (data) {
                             that.municipality_array = data;
                             that.loadData();
@@ -131,6 +154,7 @@
 
                         d3.json('js/Opdelt.json', function (data) {
                             that.municipality_data_array = data;
+                            that.generateDataArray();
                             that.loadGeo();
                         });
                     },
@@ -138,6 +162,7 @@
                         var that = this;
                         //Load in GeoJSON data
                         d3.json("js/kommuner.geojson", function (json) {
+
                             //Bind data and create one path per GeoJSON feature
                             that.mapCountour.selectAll("path")
                                     .data(json.features)
@@ -151,20 +176,22 @@
                                         var bBox = that.tooltipPosition(el);
                                         var xpos = Number(bBox[0]);
                                         var ypos = (bBox[1] - 10);
+                                        var data = that.getInfo(d.properties.KOMKODE);
 
                                         el.style("stroke", "#000")
                                                 .style("stroke-width", 3);
 
                                         d3.select("#dod-tooltip")
-                                                .style('top', ypos + "px")
-                                                .style('left', xpos + "px")
                                                 .style('display', 'block');
 
                                         d3.select(".dod-name")
                                                 .html(d.properties.KOMNAVN);
 
-                                        d3.select(".dod-code")
-                                                .html(that.nameFormat(d.properties.KOMKODE));
+                                        d3.select("#dod-municipality")
+                                                .html(data['District']);
+
+                                        d3.select("#dod-children")
+                                                .html(data['Count']);
 
                                     })
                                     .on('mouseout', function () {
@@ -175,6 +202,8 @@
                                     });
 
                             that.$j("#loading").hide();
+
+                            console.log(that);
                         });
                     },
                     zoomMap: function () {
@@ -183,21 +212,43 @@
                     tooltipPosition: function (element) {
                         var bbox = element.node().getBBox();
                         return [bbox.x + bbox.width / 2, bbox.y - 10 + bbox.height / 2];
-                    }
-                };
-            };
-
-            dod.Data = function () {
-                return {
-                    municipality_array: [],
-                    municipality_data_array: [],
-                    init: function () {
+                    },
+                    generateDataArray: function () {
+                        this.current_data = [];
+                        for (var i = 0; i < this.municipality_data_array.length; i++) {
+                            if ("" + this.municipality_data_array[i]['Year'] === "" + this.current_year) {
+                                this.current_data.push(this.municipality_data_array[i]);
+                            }
+                        }
+                    },
+                    getInfo: function (code) {
+                        var data = undefined;
+                        for (var i = 0; i < this.municipality_array.length; i++) {
+                            if ("" + this.municipality_array[i]['Code'] === "" + code && "" + this.current_year === "" + this.municipality_array[i]['Year']) {
+                                data = this.municipality_array[i];
+                                break;
+                            }
+                        }
+                        return data;
+                    },
+                    setupButtons: function () {
                         var that = this;
-
-                    }
+                        for (var i = 0; i < this.years.length; i++) {
+                            d3.select("#years")
+                                    .insert('button')
+                                    .attr('type', 'button')
+                                    .attr('class', 'btn btn-default')
+                                    .attr('data-year', this.years[i])
+                                    .html(this.years[i])
+                                    .on('click', function () {
+                                        var year = d3.select(this).attr('data-year');
+                                        that.current_year = year;
+                                        that.generateDataArray();
+                                    });
+                        }
+                    },
                 };
             };
-
             dod.ready = function () {
                 dod.m = new dod.Map();
                 dod.m.init();
