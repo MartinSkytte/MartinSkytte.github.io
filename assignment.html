@@ -22,10 +22,8 @@
         <div class="container">
             <h1>Data of Denmark</h1>
             <div class="row">
-                <div class="text-center col-sm-offset-3 col-sm-6 text-center">
-                    <div class="btn-group center-block" role="group" id="years">
-
-                    </div>
+                <div class="col-xs-12">
+                    <h3 id="showing-year"></h3>
                 </div>
                 <div class="col-xs-12">
                     <div style="dod">
@@ -66,7 +64,7 @@
                                         <div class="panel-body">
                                             <div class="xs-col-6 text-uppercase text-bold">Municipality</div>
                                             <div id="dod-municipality" class="xs-col-6"></div>
-                                            <div class="xs-col-6 text-uppercase text-bold">Total Children</div>
+                                            <div class="xs-col-6 text-uppercase text-bold">Approximated number of Children</div>
                                             <div id="dod-children" class="xs-col-6"></div>
                                         </div>
                                     </div>
@@ -76,6 +74,11 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="text-center col-sm-offset-3 col-sm-6 text-center">
+                    <div class="btn-group center-block" role="group" id="years">
+
                     </div>
                 </div>
             </div>
@@ -103,33 +106,34 @@
                     centerX: 0,
                     centerY: 0,
                     svg: {},
-                    nameFormat: function (n) {
-                        return "County code: " + n;
-                    },
                     mapProjection: d3.geo.conicConformal().scale(10300).center([11, 56.3]),
                     mapPath: {},
                     mapCountour: {},
                     municipality_array: [],
                     municipality_data_array: [],
-                    toilet_types: {"1": "Toilet in dwelling", "2": "Other/no toilet", "3": "Toilet outside dwelling"},
+                    wc_bath_types: {"1": "Toilet in dwelling & Bathroom in dwelling", "2": "Toilet in dwelling or Bathroom in dwelling", "3": "Toilet outside dwelling or Access to bathroom", "4": "Other/no toilet or No bathroom or access to bathroom"},
                     housing_types: {"1": "Detached houses/farmhouses", "2": "Terraced, linked or semi-detached houses", "3": "Multi-dwelling houses"},
-                    bath_types: {"1": "Bathroom in dwelling", "2": "No bathroom or access to bathroom", "3": "Access to bathroom"},
                     data_bobbles: [],
                     current_data: [],
-                    current_year: "2010",
-                    years: ["2010", "2011", "2012", "2013", "2014", "2015"],
+                    current_year: "2013",
+                    years: ["2013", "2014", "2015"],
                     maxValueForYear: function (year) {
                         var that = this;
                         return d3.max(this.municipality_array, function (data) {
                             if ("" + year === that.current_year) {
-
-                                return data.count;
+                                return data.Count;
                             }
                             return 0;
                         });
                     },
+                    rScale: function (n) {
+                        var that = this;
+                        var scale = d3.scale.pow().exponent(.5).domain([0, that.maxValueForYear(that.current_year)]).range([1, 90]);
+                        return scale(n);
+                    },
                     init: function () {
                         var that = this;
+                        d3.select('#showing-year').html("Showing data for year " + this.current_year);
                         this.svg = d3.select("#dod-mapCanvas")
                                 .append("svg:svg")
                                 .attr("width", that.width)
@@ -153,7 +157,7 @@
                     loadMunicipality: function () {
                         var that = this;
                         this.setupButtons();
-                        d3.json('js/IkkeOpdelt(1).json', function (data) {
+                        d3.json('js/IkkeOpdelt.json', function (data) {
                             that.municipality_array = data;
                             that.loadData();
                         });
@@ -186,9 +190,6 @@
                                         var xpos = Number(bBox[0]);
                                         var ypos = (bBox[1] - 10);
                                         var data = that.getInfo(d.properties.KOMKODE);
-                                        var info = that.getInfoData(d.properties.KOMKODE);
-
-                                        console.log(info);
 
                                         el.style("stroke", "#000")
                                                 .style("stroke-width", 3);
@@ -200,10 +201,10 @@
                                                 .html(d.properties.KOMNAVN + " " + d.properties.KOMKODE);
 
                                         d3.select("#dod-municipality")
-                                                .html(data['District'] + " " + data['Code']);
+                                                .html(data['District'] + " " + data['District Code']);
 
                                         d3.select("#dod-children")
-                                                .html(data['Count']);
+                                                .html(that.getChildrenForCode(d.properties.KOMKODE));
 
                                     })
                                     .on('mouseout', function () {
@@ -215,6 +216,7 @@
 
                             that.$j("#loading").hide();
 
+                            console.log(that.rScale(300000));
                             console.log(that);
                         });
                     },
@@ -233,65 +235,53 @@
                             }
                         }
                     },
-                    getInfoData: function (code) {
-                        var data = [];
+                    getChildrenForCode: function (code) {
+                        var children = 0;
+                        for (var i = 0; i < this.current_data.length; i++) {
+                            if (this.current_data[i]['Year'] === this.current_year && ""+this.current_data[i]['District Code'] === ""+code) {
+                                children += (this.current_data[i]['Children'] === 0 ? 0 : this.current_data[i]['Children'] * this.current_data[i]['Count']);
+                            }
+                        }
+                        return children;
+                    },
+                    getInfoData: function () {
                         var info = [];
 
                         for (var i = 0; i < this.current_data.length; i++) {
-                            if ("" + this.current_data[i]['District Code'] === "" + code && "" + this.current_year === "" + this.current_data[i]['Year']) {
-                                data.push(this.current_data[i]);
-                            }
-                        }
+                            if (this.current_data[i]['Year'] === this.current_year) {
+                                var infoIndex = info.findIndex(function (element) {
+                                    return (this.WcBath === element.WcBath && this.Housing === element.Housing);
+                                }, {"WcBath": this.current_data[i]['WcBath'], "Housing": this.current_data[i]['House type']});
 
-                        console.log(data[1]);
-
-                        for (var i = 0; i < data.length; i++) {
-                            var access = -1;
-                            if(data[i]['Toilet'] === "Toilet in dwelling" && data[i]['Bath'] === "Bathroom in dwelling") {
-                                access = 1;
-                            } else if (data[i]['Toilet'] === "Toilet outside dwelling" || data[i]['Bath'] === "Access to bathroom") {
-                                access = 2;
-                            } else if (data[i]['Toilet'] === "Other/no toilet" && data[i]['Bath'] === "No bathroom or access to bathroom") {
-                                access = 3;
-                            } else if (data[i]['Toilet'] === "Other/no toilet" || data[i]['Bath'] === "No bathroom or access to bathroom") {
-                                access = 4;
-                            
-                            } else {
-                                console.log("error: " + JSON.stringify(data[i]));
-                            }
-            
-                            var infoIndex = info.findIndex(function (element) {
-                                return (this.Access === element.Access && this.Housing === element.Housing);
-                            }, {"Access": access, "Housing":data[i]['House type']});
-                            
-                                //console.log(infoIndex);
-                            
-                            if (infoIndex === -1) {
-                                var obj = {
-                                    "Count": data[i]['Count'],
-                                    "Housing": data[i]['House type'],
-                                    "Access": access,
-                                    "approx": (data[i]['Children'] === 0 ? data[i]['Count'] : data[i]['Children'] * data[i]['Count'])
-                                };
-                                info.push(obj);
-                            } else {
-                                var obj = info[infoIndex];
-                                obj['Count'] += data[i]['Count'];
-                                obj['approx'] += (data[i]['Children'] === 0 ? data[i]['Count'] : data[i]['Children'] * data[i]['Count']);
-                                info[infoIndex] = obj;
+                                if (infoIndex === -1) {
+                                    var obj = {
+                                        "Count": this.current_data[i]['Count'],
+                                        "Housing": this.current_data[i]['House type'],
+                                        "WcBath": this.current_data[i]['WcBath'],
+                                        "approx": (this.current_data[i]['Children'] === 0 ? 0 : this.current_data[i]['Children'] * this.current_data[i]['Count'])
+                                    };
+                                    info.push(obj);
+                                } else {
+                                    var obj = info[infoIndex];
+                                    obj['Count'] += this.current_data[i]['Count'];
+                                    obj['approx'] += (this.current_data[i]['Children'] === 0 ? 0 : this.current_data[i]['Children'] * this.current_data[i]['Count']);
+                                    info[infoIndex] = obj;
+                                }
                             }
                         }
 
                         return info;
                     },
                     getInfo: function (code) {
-                        var data = undefined;
+                        var data = [];
+
                         for (var i = 0; i < this.municipality_array.length; i++) {
-                            if ("" + this.municipality_array[i]['Code'] === "" + code && "" + this.current_year === "" + this.municipality_array[i]['Year']) {
+                            if ("" + this.municipality_array[i]['District Code'] === "" + code && "" + this.current_year === "" + this.municipality_array[i]['Year']) {
                                 data = this.municipality_array[i];
                                 break;
                             }
                         }
+
                         return data;
                     },
                     setupButtons: function () {
@@ -307,6 +297,7 @@
                                         var year = d3.select(this).attr('data-year');
                                         that.current_year = year;
                                         that.generateDataArray();
+                                        d3.select('#showing-year').html("Showing data for year " + year);
                                     });
                         }
                     },
