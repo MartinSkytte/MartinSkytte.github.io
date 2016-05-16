@@ -22,8 +22,10 @@
         <div class="container">
             <h1>Data of Denmark</h1>
             <div class="row">
-                <div class="col-xs-12">
-                    <h3 id="showing-year"></h3>
+                <div class="text-center col-sm-offset-2 col-sm-8">
+                    <div class="btn-group center-block" role="group" id="charts">
+
+                    </div>
                 </div>
                 <div class="col-xs-12">
                     <div style="dod">
@@ -56,14 +58,19 @@
                                         <div class="dod-code"></div>
                                     </div>
                                 </div>-->
-                                <div id="dod-mapCanvas">
+                                <div id="dod-canvas">
+                                    <div id="dod-map-explanation">
+                                        <h4 id="showing-year"></h4>
+                                        <p id="dod-map-explanation-txt"></p>
+                                    </div>
+                                    <div id="dod-map-facts">
+
+                                    </div>
                                     <div id="dod-tooltip" class="panel panel-default">
                                         <div class="panel-heading">
                                             <h3 class="panel-title dod-name"></h3>
                                         </div>
                                         <div class="panel-body">
-                                            <div class="xs-col-6 text-uppercase text-bold">Municipality</div>
-                                            <div id="dod-municipality" class="xs-col-6"></div>
                                             <div class="xs-col-6 text-uppercase text-bold">Approximated number of Children</div>
                                             <div id="dod-children" class="xs-col-6"></div>
                                         </div>
@@ -76,7 +83,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="text-center col-sm-offset-3 col-sm-6 text-center">
+                <div class="text-center col-sm-offset-4 col-sm-4">
                     <div class="btn-group center-block" role="group" id="years">
 
                     </div>
@@ -98,7 +105,7 @@
             /************************
              ** Map functions
              ***********************/
-            dod.Map = function () {
+            dod.Chart = function () {
                 return {
                     $j: jQuery,
                     width: 970,
@@ -107,8 +114,10 @@
                     centerY: 0,
                     svg: {},
                     mapProjection: d3.geo.conicConformal().scale(10300).center([11, 56.3]),
+                    mapFeatures: [],
                     mapPath: {},
                     mapCountour: {},
+                    totalChildren: 0,
                     municipality_array: [],
                     municipality_data_array: [],
                     wc_bath_types: {"1": "Toilet in dwelling & Bathroom in dwelling", "2": "Toilet in dwelling or Bathroom in dwelling", "3": "Toilet outside dwelling or Access to bathroom", "4": "Other/no toilet or No bathroom or access to bathroom"},
@@ -117,6 +126,9 @@
                     current_data: [],
                     current_year: "2013",
                     years: ["2013", "2014", "2015"],
+                    charts: [{"chart": "map", "name": "Country Distribution"}, {"chart": "bobble", "name": "All Sanatories"}, {"chart": "circle", "name": "Type of Sanatory"}, {"chart": "totals", "name": "Totals by Municipality"}],
+                    mapExplainTxt: "The map is showing displaying some basic data for each municipality when hovering over them. You can also zoom or drag the map to find the data of the municipality you want.\n\
+                                    <br/><br/> When saying approximated, it is because the families is divinded into groups. They are as follows: <ul><li>0 Children</li><li>1 Child</li><li>2 Children</li><li>3 Children</li><li>4 Children</li><li>5 or Above Children</li></ul>",
                     maxValueForYear: function (year) {
                         var that = this;
                         return d3.max(this.municipality_array, function (data) {
@@ -134,7 +146,7 @@
                     init: function () {
                         var that = this;
                         d3.select('#showing-year').html("Showing data for year " + this.current_year);
-                        this.svg = d3.select("#dod-mapCanvas")
+                        this.svg = d3.select("#dod-canvas")
                                 .append("svg:svg")
                                 .attr("width", that.width)
                                 .call(d3.behavior.zoom()
@@ -156,7 +168,7 @@
                     },
                     loadMunicipality: function () {
                         var that = this;
-                        this.setupButtons();
+                        dod.setupButtons();
                         d3.json('js/IkkeOpdelt.json', function (data) {
                             that.municipality_array = data;
                             that.loadData();
@@ -175,50 +187,87 @@
                         var that = this;
                         //Load in GeoJSON data
                         d3.json("js/kommuner.geojson", function (json) {
-
-                            //Bind data and create one path per GeoJSON feature
-                            that.mapCountour.selectAll("path")
-                                    .data(json.features)
-                                    .enter()
-                                    .append("path")
-                                    .attr("d", that.mapPath)
-                                    .attr("stroke", "black")
-                                    .style("fill", "steelblue")
-                                    .on('mouseover', function (d) {
-                                        var el = d3.select(this);
-                                        var bBox = that.tooltipPosition(el);
-                                        var xpos = Number(bBox[0]);
-                                        var ypos = (bBox[1] - 10);
-                                        var data = that.getInfo(d.properties.KOMKODE);
-
-                                        el.style("stroke", "#000")
-                                                .style("stroke-width", 3);
-
-                                        d3.select("#dod-tooltip")
-                                                .style('display', 'block');
-
-                                        d3.select(".dod-name")
-                                                .html(d.properties.KOMNAVN + " " + d.properties.KOMKODE);
-
-                                        d3.select("#dod-municipality")
-                                                .html(data['District'] + " " + data['District Code']);
-
-                                        d3.select("#dod-children")
-                                                .html(that.getChildrenForCode(d.properties.KOMKODE));
-
-                                    })
-                                    .on('mouseout', function () {
-                                        d3.select(this)
-                                                .style("stroke-width", 1);
-                                        d3.select("#dod-tooltip")
-                                                .style('display', 'none');
-                                    });
+                            that.mapFeatures = json.features;
+                            that.setupMap();
 
                             that.$j("#loading").hide();
 
                             console.log(that.rScale(300000));
                             console.log(that);
                         });
+                    },
+                    setupMap: function () {
+                        var that = this;
+
+                        //setup the totals facts
+                        this.$j("#dod-map-explanation-txt").html(this.mapExplainTxt);
+                        this.generateMapTotals();
+
+
+                        //Bind data and create one path per GeoJSON feature
+                        this.mapCountour.selectAll("path")
+                                .data(that.mapFeatures)
+                                .enter()
+                                .append("path")
+                                .attr("d", that.mapPath)
+                                .attr("stroke", "black")
+                                .style("fill", "steelblue")
+                                .on('mouseover', function (d) {
+                                    var el = d3.select(this);
+                                    var bBox = that.tooltipPosition(el);
+                                    var xpos = Number(bBox[0]);
+                                    var ypos = (bBox[1] - 10);
+                                    var data = that.getInfo(d.properties.KOMKODE);
+
+                                    el.style("stroke", "#000")
+                                            .style("stroke-width", 3);
+
+                                    d3.select("#dod-tooltip")
+                                            .style('display', 'block');
+
+                                    d3.select(".dod-name")
+                                            .html(data['District'] + " " + data['District Code']);
+
+                                    d3.select("#dod-children")
+                                            .html(that.getChildrenForCode(d.properties.KOMKODE).toLocaleString('en-US'));
+
+                                })
+                                .on('mouseout', function () {
+                                    d3.select(this)
+                                            .style("stroke-width", 1);
+                                    d3.select("#dod-tooltip")
+                                            .style('display', 'none');
+                                });
+                    },
+                    generateMapTotals: function () {
+                        var totalData = this.getInfoData();
+                        var children = 0;
+                        var childrenByHouseType = {};
+                        var div = this.$j("#dod-map-facts");
+
+
+                        for (var i = 0; i < totalData.length; i++) {
+
+                            if (childrenByHouseType.hasOwnProperty(totalData[i]['Housing'])) {
+                                childrenByHouseType[totalData[i]['Housing']] += totalData[i]['approx'];
+                            } else {
+                                childrenByHouseType[totalData[i]['Housing']] = totalData[i]['approx'];
+                            }
+                            children += totalData[i]['approx'];
+                        }
+
+                        this.totalChildren = children;
+
+                        div.html('<h4>The approx. number of children per house type</h4>'
+                                + '<h5>' + this.housing_types[1] + '</h5>'
+                                + childrenByHouseType[1].toLocaleString('en-US')
+                                + '<h5>' + this.housing_types[2] + '</h5>'
+                                + childrenByHouseType[2].toLocaleString('en-US')
+                                + '<h5>' + this.housing_types[3] + '</h5>'
+                                + childrenByHouseType[3].toLocaleString('en-US')
+                                + '<h5>Total</h5>'
+                                + children.toLocaleString('en-US')
+                                );
                     },
                     zoomMap: function () {
                         this.mapCountour.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -234,11 +283,13 @@
                                 this.current_data.push(this.municipality_data_array[i]);
                             }
                         }
+
+                        this.generateMapTotals();
                     },
                     getChildrenForCode: function (code) {
                         var children = 0;
                         for (var i = 0; i < this.current_data.length; i++) {
-                            if (this.current_data[i]['Year'] === this.current_year && ""+this.current_data[i]['District Code'] === ""+code) {
+                            if (this.current_data[i]['Year'] === this.current_year && "" + this.current_data[i]['District Code'] === "" + code) {
                                 children += (this.current_data[i]['Children'] === 0 ? 0 : this.current_data[i]['Children'] * this.current_data[i]['Count']);
                             }
                         }
@@ -284,28 +335,107 @@
 
                         return data;
                     },
-                    setupButtons: function () {
-                        var that = this;
-                        for (var i = 0; i < this.years.length; i++) {
-                            d3.select("#years")
-                                    .insert('button')
-                                    .attr('type', 'button')
-                                    .attr('class', 'btn btn-default')
-                                    .attr('data-year', this.years[i])
-                                    .html(this.years[i])
-                                    .on('click', function () {
-                                        var year = d3.select(this).attr('data-year');
-                                        that.current_year = year;
-                                        that.generateDataArray();
-                                        d3.select('#showing-year').html("Showing data for year " + year);
-                                    });
-                        }
-                    },
                 };
             };
+
+            dod.setupButtons = function () {
+                var that = this;
+                for (var i = 0; i < dod.c.years.length; i++) {
+                    d3.select("#years")
+                            .insert('button')
+                            .attr('type', 'button')
+                            .attr('class', 'btn-year btn btn-default')
+                            .attr('data-year', dod.c.years[i])
+                            .html(dod.c.years[i])
+                            .on('click', function () {
+                                var year = d3.select(this).attr('data-year');
+                                var activeClass = "active";
+                                var alreadyIsActive = d3.select(this).classed(activeClass);
+
+                                // set active year button
+                                d3.selectAll(".btn-year")
+                                        .classed(activeClass, false);
+                                d3.select(this).classed(activeClass, !alreadyIsActive);
+
+                                dod.c.current_year = year;
+                                dod.c.generateDataArray();
+                                d3.select('#showing-year').html("Showing data for year " + year);
+                            });
+                }
+
+                d3.select("#charts")
+                        .insert('button')
+                        .attr('type', 'button')
+                        .attr('class', 'btn-chart btn btn-default')
+                        .attr('data-chart', dod.c.charts[0].chart)
+                        .html(dod.c.charts[0].name)
+                        .on('click', function () {
+                            var year = d3.select(this).attr('data-chart');
+                            var activeClass = "active";
+                            var alreadyIsActive = d3.select(this).classed(activeClass);
+
+                            // set active year button
+                            d3.selectAll(".btn-chart")
+                                    .classed(activeClass, false);
+                            d3.select(this).classed(activeClass, !alreadyIsActive);
+                        });
+
+                d3.select("#charts")
+                        .insert('button')
+                        .attr('type', 'button')
+                        .attr('class', 'btn-chart btn btn-default')
+                        .attr('data-chart', dod.c.charts[1].chart)
+                        .html(dod.c.charts[1].name)
+                        .on('click', function () {
+                            var year = d3.select(this).attr('data-chart');
+                            var activeClass = "active";
+                            var alreadyIsActive = d3.select(this).classed(activeClass);
+
+                            // set active year button
+                            d3.selectAll(".btn-chart")
+                                    .classed(activeClass, false);
+                            d3.select(this).classed(activeClass, !alreadyIsActive);
+                        });
+
+                d3.select("#charts")
+                        .insert('button')
+                        .attr('type', 'button')
+                        .attr('class', 'btn-chart btn btn-default')
+                        .attr('data-chart', dod.c.charts[2].chart)
+                        .html(dod.c.charts[2].name)
+                        .on('click', function () {
+                            var year = d3.select(this).attr('data-chart');
+                            var activeClass = "active";
+                            var alreadyIsActive = d3.select(this).classed(activeClass);
+
+                            // set active year button
+                            d3.selectAll(".btn-chart")
+                                    .classed(activeClass, false);
+                            d3.select(this).classed(activeClass, !alreadyIsActive);
+                        });
+
+                d3.select("#charts")
+                        .insert('button')
+                        .attr('type', 'button')
+                        .attr('class', 'btn-chart btn btn-default')
+                        .attr('data-chart', dod.c.charts[3].chart)
+                        .html(dod.c.charts[3].name)
+                        .on('click', function () {
+                            var year = d3.select(this).attr('data-chart');
+                            var activeClass = "active";
+                            var alreadyIsActive = d3.select(this).classed(activeClass);
+
+                            // set active year button
+                            d3.selectAll(".btn-chart")
+                                    .classed(activeClass, false);
+                            d3.select(this).classed(activeClass, !alreadyIsActive);
+                        });
+
+            };
+
             dod.ready = function () {
-                dod.m = new dod.Map();
-                dod.m.init();
+                dod.c = new dod.Chart();
+                dod.c.init();
             };
             if (!!document.createElementNS && !!document.createElementNS('http://www.w3.org/2000/svg', "svg").createSVGRect) {
                 $j(document).ready($j.proxy(dod.ready, this));
