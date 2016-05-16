@@ -22,7 +22,7 @@
         <div class="container">
             <h1>Data of Denmark</h1>
             <div class="row">
-                <div class="text-center col-sm-offset-2 col-sm-8">
+                <div class="text-center col-sm-offset-3 col-sm-6">
                     <div class="btn-group center-block" role="group" id="charts">
 
                     </div>
@@ -52,8 +52,8 @@
                             <div id="dod-chart">
 
 
-                                <!--<div id="dod-tooltip">
-                                    <div id="dod-tooltipContainer">
+                                <!--<div id="dod-map-tooltip">
+                                    <div id="dod-map-tooltipContainer">
                                         <div class="dod-name"></div>
                                         <div class="dod-code"></div>
                                     </div>
@@ -66,7 +66,7 @@
                                     <div id="dod-map-facts">
 
                                     </div>
-                                    <div id="dod-tooltip" class="panel panel-default">
+                                    <div id="dod-map-tooltip" class="panel panel-default">
                                         <div class="panel-heading">
                                             <h3 class="panel-title dod-name"></h3>
                                         </div>
@@ -75,9 +75,20 @@
                                             <div id="dod-children" class="xs-col-6"></div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="panel">
 
+                                </div>
+                                <div id="dod-graph-tooltip" class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title dod-graph-name"></h3>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="text-uppercase text-bold">Type of Housing</div>
+                                        <div id="dod-graph-house"></div>
+                                        <div class="text-uppercase text-bold">Type of WC/Bath</div>
+                                        <div id="dod-graph-wcbath"></div>
+                                        <div class="text-uppercase text-bold">Approx. Number of Children</div>
+                                        <div id="dod-graph-children"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -103,7 +114,7 @@
             var $j = jQuery;
             var dod = dod || {};
             /************************
-             ** Map functions
+             ** chart functions
              ***********************/
             dod.Chart = function () {
                 return {
@@ -113,6 +124,8 @@
                     centerX: 0,
                     centerY: 0,
                     svg: {},
+                    force: null,
+                    gravity: null,
                     mapProjection: d3.geo.conicConformal().scale(10300).center([11, 56.3]),
                     mapFeatures: [],
                     mapPath: {},
@@ -120,13 +133,30 @@
                     totalChildren: 0,
                     municipality_array: [],
                     municipality_data_array: [],
-                    wc_bath_types: {"1": "Toilet in dwelling & Bathroom in dwelling", "2": "Toilet in dwelling or Bathroom in dwelling", "3": "Toilet outside dwelling or Access to bathroom", "4": "Other/no toilet or No bathroom or access to bathroom"},
-                    housing_types: {"1": "Detached houses/farmhouses", "2": "Terraced, linked or semi-detached houses", "3": "Multi-dwelling houses"},
+                    circle: {},
                     data_bobbles: [],
                     current_data: [],
+                    nodes: [],
+                    maxNodeChild: 0,
+                    fillColor: d3.scale.ordinal().domain([0, 1, 2, 3, 4, 5, 6]).range(["#88CC88", "#55AA55", "#2D882D", "#116611", "#004400"]),
+                    strokeColor: d3.scale.ordinal().domain([0, 1, 2, 3, 4, 5, 6]).range(["#D9F0A0", "#ABC864", "#81A035", "#5B7814", "#395000"]),
+                    getFillColor: null,
+                    getStrokeColor: null,
+                    q: null,
+                    defaultCharge: function (d) {
+                        if (d.value < 0) {
+                            return 0;
+                        } else {
+                            return -Math.pow(d.R, 2.0) / 8;
+                        }
+                        ;
+                    },
+                    defaultGravity: 0.1,
+                    wc_bath_types: {"1": "Toilet in dwelling & Bathroom in dwelling", "2": "Toilet in dwelling or Bathroom in dwelling", "3": "Toilet outside dwelling or Access to bathroom", "4": "Other/no toilet or No bathroom or access to bathroom"},
+                    housing_types: {"1": "Detached houses/farmhouses", "2": "Terraced, linked or semi-detached houses", "3": "Multi-dwelling houses"},
                     current_year: "2013",
                     years: ["2013", "2014", "2015"],
-                    charts: [{"chart": "map", "name": "Country Distribution"}, {"chart": "bobble", "name": "All Sanatories"}, {"chart": "circle", "name": "Type of Sanatory"}, {"chart": "totals", "name": "Totals by Municipality"}],
+                    charts: [{"chart": "map", "name": "Country Distribution"}, {"chart": "bobble", "name": "All Sanatories"}, {"chart": "circle", "name": "Type of Sanatory"}, {"chart": "scatter", "name": "Scatter"}],
                     mapExplainTxt: "The map is showing displaying some basic data for each municipality when hovering over them. You can also zoom or drag the map to find the data of the municipality you want.\n\
                                     <br/><br/> When saying approximated, it is because the families is divinded into groups. They are as follows: <ul><li>0 Children</li><li>1 Child</li><li>2 Children</li><li>3 Children</li><li>4 Children</li><li>5 or Above Children</li></ul>",
                     maxValueForYear: function (year) {
@@ -140,7 +170,7 @@
                     },
                     rScale: function (n) {
                         var that = this;
-                        var scale = d3.scale.pow().exponent(.5).domain([0, that.maxValueForYear(that.current_year)]).range([1, 90]);
+                        var scale = d3.scale.pow().exponent(.5).domain([0, that.maxValueForYear(that.current_year)]).range([3, 90]);
                         return scale(n);
                     },
                     init: function () {
@@ -154,21 +184,30 @@
                                             that.zoomMap();
                                         }));
 
+                        this.boundingRadius = this.rScale(this.maxValueForYear(this.current_year));
                         this.mapPath = d3.geo.path().projection(this.mapProjection);
-
                         this.centerX = this.width / 2;
                         this.centerY = this.height / 2;
-
                         this.mapCountour = this.svg
                                 .append("g")
                                 .attr("id", "mapCountour");
-
                         this.loadMunicipality();
+                        this.getStrokeColor = function (d) {
+                            var x = d3.scale.quantize().domain([0, that.maxNodeChild - 20000]).range([0, 1, 2, 3, 4]);
+                            return this.strokeColor(x(d.approx));
+                        };
+                        this.getFillColor = function (d) {
+                            if (d.approx === 0) {
+                                return "#fff";
+                            }
 
+                            var x = d3.scale.quantize().domain([0, that.maxNodeChild - 20000]).range([0, 1, 2, 3, 4]);
+                            return this.fillColor(x(d.approx));
+                        };
                     },
                     loadMunicipality: function () {
                         var that = this;
-                        dod.setupButtons();
+                        dod.setupButtons().init();
                         d3.json('js/IkkeOpdelt.json', function (data) {
                             that.municipality_array = data;
                             that.loadData();
@@ -176,7 +215,6 @@
                     },
                     loadData: function () {
                         var that = this;
-
                         d3.json('js/Opdelt.json', function (data) {
                             that.municipality_data_array = data;
                             that.generateDataArray();
@@ -189,21 +227,144 @@
                         d3.json("js/kommuner.geojson", function (json) {
                             that.mapFeatures = json.features;
                             that.setupMap();
-
+                            that.setupCircles();
                             that.$j("#loading").hide();
-
-                            console.log(that.rScale(300000));
-                            console.log(that);
                         });
+                    },
+                    getNameFromCode: function (code) {
+                        var name = "";
+                        for (var i = 0; i < this.municipality_array.length; i++) {
+                            if ("" + this.municipality_array[i]['District Code'] === "" + code) {
+                                name = this.municipality_array[i]['District'];
+                            }
+                        }
+
+                        return name;
+                    },
+                    generateNodes: function () {
+                        var info = [];
+                        var that = this;
+                        for (var i = 0; i < this.current_data.length; i++) {
+                            if (this.current_data[i]['Year'] === this.current_year) {
+                                var infoIndex = info.findIndex(function (element) {
+                                    return (this.WcBath === element.WcBath && this.Code === element.Code);
+                                }, {"Code": this.current_data[i]['District Code'], "WcBath": this.current_data[i]['WcBath']});
+                                if (infoIndex === -1) {
+                                    var obj = {
+                                        "ID": this.current_data[i]['District Code'] + "-" + this.current_data[i]['WcBath'],
+                                        "Code": this.current_data[i]['District Code'],
+                                        "Name": this.getNameFromCode(this.current_data[i]['District Code']),
+                                        "Count": this.current_data[i]['Count'],
+                                        "Housing": this.current_data[i]['House type'],
+                                        "WcBath": this.current_data[i]['WcBath'],
+                                        "approx": (this.current_data[i]['Children'] === 0 ? 0 : this.current_data[i]['Children'] * this.current_data[i]['Count']),
+                                        "R": this.rScale((this.current_data[i]['Children'] === 0 ? 0 : this.current_data[i]['Children'] * this.current_data[i]['Count']))
+                                    };
+                                    info.push(obj);
+                                } else {
+                                    var obj = info[infoIndex];
+                                    obj['Count'] += this.current_data[i]['Count'];
+                                    obj['approx'] += (this.current_data[i]['Children'] === 0 ? 0 : this.current_data[i]['Children'] * this.current_data[i]['Count']);
+                                    obj['R'] = this.rScale(obj['approx']),
+                                            info[infoIndex] = obj;
+                                }
+
+                                if (infoIndex !== -1) {
+
+                                    if (this.maxNodeChild < info[infoIndex]['approx']) {
+                                        this.maxNodeChild = info[infoIndex]['approx'];
+                                    }
+                                }
+                            }
+                        }
+                        info.sort(function (a, b) {
+                            return b['approx'] - a['approx'];
+                        });
+
+                        this.nodes = info;
+                    },
+                    updateCircles: function () {
+                        var that = this;
+                        this.circle = this.svg.selectAll("circle")
+                                .data(this.nodes, function (d) {
+                                    return d.ID;
+                                });
+
+                        this.circle.attr("r", function (d) {
+                            return d.R;
+                        })
+                                .style("fill", function (d) {
+                                    return that.getFillColor(d);
+                                })
+                                .style("stroke", function (d) {
+                                    return that.getStrokeColor(d);
+                                })
+                                .style("stroke-width", 1)
+                                .attr('id', function (d) {
+                                    return 'dod-circle-' + d.ID;
+                                });
+
+                        if (this.force !== null) {
+                            this.start();
+                            //this.totalLayout();
+                        }
+                    },
+                    setupCircles: function () {
+                        var that = this;
+                        this.circle = this.svg.selectAll("circle")
+                                .data(this.nodes, function (d) {
+                                    return d.ID;
+                                });
+
+                        this.circle.enter().append("svg:circle")
+                                .attr("r", function (d) {
+                                    return d.R;
+                                })
+                                .style("fill", function (d) {
+                                    return that.getFillColor(d);
+                                })
+                                .style("stroke", function (d) {
+                                    return that.getStrokeColor(d);
+                                })
+                                .style("stroke-width", 1)
+                                .attr('id', function (d) {
+                                    return 'dod-circle-' + d.ID;
+                                })
+                                .attr("visibility", "hidden")
+                                .on("mouseover", function (d) {
+                                    var el = d3.select(this);
+                                    var xpos = el.attr('cx');
+                                    var ypos = (el.attr('cy') - d.R + 15);
+
+                                    el.style("stroke", "#000")
+                                            .style("stroke-width", 3);
+
+                                    d3.select("#dod-graph-tooltip")
+                                            .style('top', ypos + "px")
+                                            .style('left', xpos + "px")
+                                            .style('display', 'block');
+
+                                    d3.select(".dod-graph-name").html(d.Name);
+                                    d3.select("#dod-graph-house").html(that.housing_types[d.Housing]);
+                                    d3.select("#dod-graph-wcbath").html(that.wc_bath_types[d.WcBath]);
+                                    d3.select("#dod-graph-children").html(d.approx);
+                                })
+                                .on("mouseout", function () {
+                                    d3.select(this)
+                                            .style("stroke-width", 1)
+                                            .style("stroke", function (d) {
+                                                return that.getFillColor(d);
+                                            });
+                                    d3.select("#dod-graph-tooltip")
+                                            .style('display', 'none');
+                                });
+                        this.start();
                     },
                     setupMap: function () {
                         var that = this;
-
                         //setup the totals facts
                         this.$j("#dod-map-explanation-txt").html(this.mapExplainTxt);
                         this.generateMapTotals();
-
-
                         //Bind data and create one path per GeoJSON feature
                         this.mapCountour.selectAll("path")
                                 .data(that.mapFeatures)
@@ -218,34 +379,28 @@
                                     var xpos = Number(bBox[0]);
                                     var ypos = (bBox[1] - 10);
                                     var data = that.getInfo(d.properties.KOMKODE);
-
                                     el.style("stroke", "#000")
                                             .style("stroke-width", 3);
-
-                                    d3.select("#dod-tooltip")
+                                    d3.select("#dod-map-tooltip")
                                             .style('display', 'block');
-
                                     d3.select(".dod-name")
                                             .html(data['District'] + " " + data['District Code']);
-
                                     d3.select("#dod-children")
                                             .html(that.getChildrenForCode(d.properties.KOMKODE).toLocaleString('en-US'));
-
                                 })
                                 .on('mouseout', function () {
                                     d3.select(this)
                                             .style("stroke-width", 1);
-                                    d3.select("#dod-tooltip")
+                                    d3.select("#dod-map-tooltip")
                                             .style('display', 'none');
                                 });
+                        this.mapCountour.active = true;
                     },
                     generateMapTotals: function () {
                         var totalData = this.getInfoData();
                         var children = 0;
                         var childrenByHouseType = {};
                         var div = this.$j("#dod-map-facts");
-
-
                         for (var i = 0; i < totalData.length; i++) {
 
                             if (childrenByHouseType.hasOwnProperty(totalData[i]['Housing'])) {
@@ -257,7 +412,6 @@
                         }
 
                         this.totalChildren = children;
-
                         div.html('<h4>The approx. number of children per house type</h4>'
                                 + '<h5>' + this.housing_types[1] + '</h5>'
                                 + childrenByHouseType[1].toLocaleString('en-US')
@@ -284,7 +438,9 @@
                             }
                         }
 
+                        this.generateNodes();
                         this.generateMapTotals();
+                        this.updateCircles();
                     },
                     getChildrenForCode: function (code) {
                         var children = 0;
@@ -297,13 +453,11 @@
                     },
                     getInfoData: function () {
                         var info = [];
-
                         for (var i = 0; i < this.current_data.length; i++) {
                             if (this.current_data[i]['Year'] === this.current_year) {
                                 var infoIndex = info.findIndex(function (element) {
                                     return (this.WcBath === element.WcBath && this.Housing === element.Housing);
                                 }, {"WcBath": this.current_data[i]['WcBath'], "Housing": this.current_data[i]['House type']});
-
                                 if (infoIndex === -1) {
                                     var obj = {
                                         "Count": this.current_data[i]['Count'],
@@ -325,7 +479,6 @@
                     },
                     getInfo: function (code) {
                         var data = [];
-
                         for (var i = 0; i < this.municipality_array.length; i++) {
                             if ("" + this.municipality_array[i]['District Code'] === "" + code && "" + this.current_year === "" + this.municipality_array[i]['Year']) {
                                 data = this.municipality_array[i];
@@ -335,104 +488,268 @@
 
                         return data;
                     },
+                    /**
+                     * Layouts
+                     */
+                    start: function () {
+                        this.force = d3.layout.force()
+                                .nodes(this.nodes)
+                                .size([this.width, this.height]);
+                    },
+                    totalLayout: function () {
+                        var that = this;
+                        this.force
+                                .gravity(-0.01)
+                                .charge(that.defaultCharge)
+                                .friction(0.9)
+                                .on("tick", function (e) {
+                                    that.circle
+                                            .each(that.sortTotals(e.alpha))
+                                            .each(that.buoyancy(e.alpha))
+                                            .attr("cx", function (d) {
+                                                return d.x;
+                                            })
+                                            .attr("cy", function (d) {
+                                                return d.y;
+                                            });
+                                })
+                                .start();
+                    },
+                    sanatoryLayout: function () {
+                        var that = this;
+                        this.force
+                                .gravity(0)
+                                .friction(0.9)
+                                .charge(that.defaultCharge)
+                                .on("tick", function (e) {
+                                    that.circle
+                                            .each(that.sortSanatory(e.alpha))
+                                            .each(that.buoyancy(e.alpha))
+                                            .attr("cx", function (d) {
+                                                return d.x;
+                                            })
+                                            .attr("cy", function (d) {
+                                                return d.y;
+                                            });
+                                })
+                                .start();
+                    },
+                    discretionaryLayout: function () {
+                        var that = this;
+                        this.force
+                                .gravity(0)
+                                .charge(0)
+                                .friction(0.2)
+                                .on("tick", function (e) {
+                                    that.circle
+                                            .each(that.discretionarySort(e.alpha))
+                                            .attr("cx", function (d) {
+                                                return d.x;
+                                            })
+                                            .attr("cy", function (d) {
+                                                return d.y;
+                                            });
+                                })
+                                .start();
+                    },
+                    /**
+                     * Sortings
+                     */
+                    sortTotals: function (alpha) {
+                        var that = this;
+                        return function (d) {
+                            d.y = d.y + (that.centerY - 150 - d.y) * (that.defaultGravity + 0.02) * alpha;
+                            d.x = d.x + (that.centerX - d.x) * (that.defaultGravity + 0.02) * alpha;
+                        };
+                    },
+                    sortSanatory: function (alpha) {
+                        var that = this;
+                        return function (d) {
+                            var targetY = that.centerY;
+                            var targetX = 0;
+
+                            if (+d.WcBath === 1) {
+                                targetX = 600;
+                                targetY = targetY - 200;
+                            } else if (+d.WcBath === 2) {
+                                targetX = 450;
+                                targetY = targetY - 200;
+                            } else if (+d.WcBath === 3) {
+                                targetX = 600;
+                                targetY = targetY - 100;
+                            } else if (+d.WcBath === 4) {
+                                targetX = 450;
+                                targetY = targetY - 100;
+                            }
+
+                            d.y = d.y + (targetY - d.y) * (that.defaultGravity) * alpha * 1.1;
+                            d.x = d.x + (targetX - d.x) * (that.defaultGravity) * alpha * 1.1;
+                        };
+                    },
+                    discretionarySort: function (alpha) {
+                        var that = this;
+                        return function (d) {
+                            var targetY = that.height / 2;
+                            var targetX = 0;
+
+                            targetX = -300 + Math.random() * 100;
+                            targetY = d.y;
+
+                            d.y = d.y + (targetY - d.y) * Math.sin(Math.PI * (1 - alpha * 10)) * 0.2
+                            d.x = d.x + (targetX - d.x) * Math.sin(Math.PI * (1 - alpha * 10)) * 0.1
+                        };
+                    },
+                    buoyancy: function (alpha) {
+                        var that = this;
+                        return function (d) {
+                            d.y = d.y + (that.centerY - d.y) * (that.defaultGravity) * alpha * alpha * alpha * 100;
+                        };
+                    }
                 };
             };
 
+            /************************
+             ** button functions
+             ***********************/
+
             dod.setupButtons = function () {
-                var that = this;
-                for (var i = 0; i < dod.c.years.length; i++) {
-                    d3.select("#years")
-                            .insert('button')
-                            .attr('type', 'button')
-                            .attr('class', 'btn-year btn btn-default')
-                            .attr('data-year', dod.c.years[i])
-                            .html(dod.c.years[i])
-                            .on('click', function () {
-                                var year = d3.select(this).attr('data-year');
-                                var activeClass = "active";
-                                var alreadyIsActive = d3.select(this).classed(activeClass);
+                return {
+                    $j: jQuery,
+                    init: function () {
+                        var that = this;
+                        for (var i = 0; i < dod.c.years.length; i++) {
+                            d3.select("#years")
+                                    .insert('button')
+                                    .attr('type', 'button')
+                                    .attr('class', 'btn-year btn btn-default')
+                                    .attr('data-year', dod.c.years[i])
+                                    .html(dod.c.years[i])
+                                    .on('click', function () {
+                                        var year = d3.select(this).attr('data-year');
+                                        var activeClass = "active";
+                                        var alreadyIsActive = d3.select(this).classed(activeClass);
+                                        // set active year button
+                                        d3.selectAll(".btn-year")
+                                                .classed(activeClass, false);
+                                        d3.select(this).classed(activeClass, !alreadyIsActive);
+                                        dod.c.current_year = year;
+                                        dod.c.generateDataArray();
+                                        d3.select('#showing-year').html("Showing data for year " + year);
+                                    });
+                        }
 
-                                // set active year button
-                                d3.selectAll(".btn-year")
-                                        .classed(activeClass, false);
-                                d3.select(this).classed(activeClass, !alreadyIsActive);
+                        d3.select("#charts")
+                                .insert('button')
+                                .attr('type', 'button')
+                                .attr('class', 'btn-chart btn btn-default')
+                                .attr('data-chart', dod.c.charts[0].chart)
+                                .html(dod.c.charts[0].name)
+                                .on('click', function () {
+                                    var year = d3.select(this).attr('data-chart');
+                                    var activeClass = "active";
+                                    var alreadyIsActive = d3.select(this).classed(activeClass);
+                                    // set active year button
+                                    d3.selectAll(".btn-chart")
+                                            .classed(activeClass, false);
+                                    d3.select(this).classed(activeClass, !alreadyIsActive);
 
-                                dod.c.current_year = year;
-                                dod.c.generateDataArray();
-                                d3.select('#showing-year').html("Showing data for year " + year);
-                            });
-                }
+                                    that.hideCircles();
+                                    that.showMap();
+                                });
+                        d3.select("#charts")
+                                .insert('button')
+                                .attr('type', 'button')
+                                .attr('class', 'btn-chart btn btn-default')
+                                .attr('data-chart', dod.c.charts[1].chart)
+                                .html(dod.c.charts[1].name)
+                                .on('click', function () {
+                                    var year = d3.select(this).attr('data-chart');
+                                    var activeClass = "active";
+                                    var alreadyIsActive = d3.select(this).classed(activeClass);
+                                    // set active year button
+                                    d3.selectAll(".btn-chart")
+                                            .classed(activeClass, false);
+                                    d3.select(this).classed(activeClass, !alreadyIsActive);
+                                    that.showCircles();
+                                    that.hideMap();
 
-                d3.select("#charts")
-                        .insert('button')
-                        .attr('type', 'button')
-                        .attr('class', 'btn-chart btn btn-default')
-                        .attr('data-chart', dod.c.charts[0].chart)
-                        .html(dod.c.charts[0].name)
-                        .on('click', function () {
-                            var year = d3.select(this).attr('data-chart');
-                            var activeClass = "active";
-                            var alreadyIsActive = d3.select(this).classed(activeClass);
+                                    if (dod.c.nodes.length === 0) {
+                                        dod.c.generateNodes();
+                                    }
 
-                            // set active year button
-                            d3.selectAll(".btn-chart")
-                                    .classed(activeClass, false);
-                            d3.select(this).classed(activeClass, !alreadyIsActive);
-                        });
+                                    dod.c.updateCircles();
+                                    dod.c.totalLayout();
+                                });
 
-                d3.select("#charts")
-                        .insert('button')
-                        .attr('type', 'button')
-                        .attr('class', 'btn-chart btn btn-default')
-                        .attr('data-chart', dod.c.charts[1].chart)
-                        .html(dod.c.charts[1].name)
-                        .on('click', function () {
-                            var year = d3.select(this).attr('data-chart');
-                            var activeClass = "active";
-                            var alreadyIsActive = d3.select(this).classed(activeClass);
+                        d3.select("#charts")
+                                .insert('button')
+                                .attr('type', 'button')
+                                .attr('class', 'btn-chart btn btn-default')
+                                .attr('data-chart', dod.c.charts[2].chart)
+                                .html(dod.c.charts[2].name)
+                                .on('click', function () {
+                                    var year = d3.select(this).attr('data-chart');
+                                    var activeClass = "active";
+                                    var alreadyIsActive = d3.select(this).classed(activeClass);
+                                    // set active year button
+                                    d3.selectAll(".btn-chart")
+                                            .classed(activeClass, false);
+                                    d3.select(this).classed(activeClass, !alreadyIsActive);
+                                    that.showCircles();
+                                    that.hideMap();
 
-                            // set active year button
-                            d3.selectAll(".btn-chart")
-                                    .classed(activeClass, false);
-                            d3.select(this).classed(activeClass, !alreadyIsActive);
-                        });
+                                    if (dod.c.nodes.length === 0) {
+                                        dod.c.generateNodes();
+                                    }
+                                    dod.c.updateCircles();
+                                    dod.c.sanatoryLayout();
+                                });
 
-                d3.select("#charts")
-                        .insert('button')
-                        .attr('type', 'button')
-                        .attr('class', 'btn-chart btn btn-default')
-                        .attr('data-chart', dod.c.charts[2].chart)
-                        .html(dod.c.charts[2].name)
-                        .on('click', function () {
-                            var year = d3.select(this).attr('data-chart');
-                            var activeClass = "active";
-                            var alreadyIsActive = d3.select(this).classed(activeClass);
+                        d3.select("#charts")
+                                .insert('button')
+                                .attr('type', 'button')
+                                .attr('class', 'btn-chart btn btn-default')
+                                .attr('data-chart', dod.c.charts[3].chart)
+                                .html(dod.c.charts[3].name)
+                                .on('click', function () {
+                                    var year = d3.select(this).attr('data-chart');
+                                    var activeClass = "active";
+                                    var alreadyIsActive = d3.select(this).classed(activeClass);
+                                    // set active year button
+                                    d3.selectAll(".btn-chart")
+                                            .classed(activeClass, false);
+                                    d3.select(this).classed(activeClass, !alreadyIsActive);
+                                    that.showCircles();
+                                    that.hideMap();
 
-                            // set active year button
-                            d3.selectAll(".btn-chart")
-                                    .classed(activeClass, false);
-                            d3.select(this).classed(activeClass, !alreadyIsActive);
-                        });
-
-                d3.select("#charts")
-                        .insert('button')
-                        .attr('type', 'button')
-                        .attr('class', 'btn-chart btn btn-default')
-                        .attr('data-chart', dod.c.charts[3].chart)
-                        .html(dod.c.charts[3].name)
-                        .on('click', function () {
-                            var year = d3.select(this).attr('data-chart');
-                            var activeClass = "active";
-                            var alreadyIsActive = d3.select(this).classed(activeClass);
-
-                            // set active year button
-                            d3.selectAll(".btn-chart")
-                                    .classed(activeClass, false);
-                            d3.select(this).classed(activeClass, !alreadyIsActive);
-                        });
-
+                                    if (dod.c.nodes.length === 0) {
+                                        dod.c.generateNodes();
+                                    }
+                                    dod.c.updateCircles();
+                                    dod.c.discretionaryLayout();
+                                });
+                    },
+                    hideMap: function () {
+                        dod.c.mapCountour.transition().style("opacity", 0);
+                        this.$j("#dod-map-explanation").hide();
+                        this.$j("#dod-map-facts").hide();
+                        this.$j("#dod-map-tooltip").css("opacity", 0).hide();
+                    },
+                    showMap: function () {
+                        dod.c.mapCountour.transition().style("opacity", 1);
+                        this.$j("#dod-map-explanation").show();
+                        this.$j("#dod-map-facts").show();
+                        this.$j("#dod-map-tooltip").css("opacity", 1);
+                    },
+                    hideCircles: function () {
+                        d3.selectAll("circle").transition().attr("visibility", "hidden");
+                    },
+                    showCircles: function () {
+                        dod.c.updateCircles();
+                        d3.selectAll("circle").transition().attr("visibility", "visible");
+                    }
+                };
             };
-
             dod.ready = function () {
                 dod.c = new dod.Chart();
                 dod.c.init();

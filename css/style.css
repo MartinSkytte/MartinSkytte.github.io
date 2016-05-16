@@ -48,7 +48,14 @@
     overflow: hidden;
 }
 
-#dod-tooltip { 
+#dod-map-tooltip { 
+    width: 200px;
+    z-index: 1000;
+    position: absolute;
+    display: none;
+}
+
+#dod-graph-tooltip{ 
     width: 200px;
     z-index: 1000;
     position: absolute;
