@@ -66,13 +66,24 @@
     font-weight: bold;
 }
 
+#showing-year {
+    display: block;
+    position: absolute;
+    padding: 5px;
+    background-color:rgba(255, 255, 255, 0.75);
+    width: 250px;
+    top: 0px;
+    right: 0px;
+    z-index: 1000;
+}
+
 #dod-map-explanation {
     display: block;
     position: absolute;
     padding: 5px;
     background-color:rgba(255, 255, 255, 0.75);
-    width: 300px;
-    top: 0px;
+    width: 250px;
+    top: 40px;
     right: 0px;
     z-index: 1000;
 }
@@ -85,5 +96,85 @@
     width: 190px;
     bottom: 0px;
     left: 0px;
+    z-index: 1000;
+}
+
+.lbl-absolute {
+    position: absolute;
+    width: 150px;
+}
+
+#dod-size-heading {
+    position: absolute;
+    z-index: 1000;
+    width: 200px;
+    left: 50px;
+    top: 150px;
+}
+
+#dod-sizeKey {
+    position: absolute;
+    z-index: 1000;
+    height: 120px;
+    width: 200px;
+    left: 50px;
+    top: 200px;
+}
+#dod-scaleKey {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+.dod-circleKeyLabel {
+    position: absolute;
+    border-top: solid 1px #DDD;
+    width: 40px;
+}
+
+#dod-sizeKey .dod-circleKeyLabel span {
+    font-size: 10px;
+    color: #999;
+    position: absolute;
+    display: block;
+    left: 45px;
+    top: -8px;
+    width: 80px;
+    z-index: 100;
+}
+
+.dod-scaleKeyCircle {
+    stroke-width:1;
+    stroke:#999;
+    stroke-dasharray:2 2;
+    fill:none;
+}
+
+#dod-nowcbath-explain {
+    position: absolute;
+    width: 250px;
+    top: 160px;
+    left: 720px;
+}
+
+#dod-nowcbath {
+    position: absolute;
+    width: 250px;
+    height: 50px;
+    top: 130px;
+    left: 700px;
+}
+
+.dod-nowcbath {
+    stroke-width:1;
+    stroke:#999;
+    stroke-dasharray:4 4;
+    fill:none;
+}
+
+.explain-txt {
+    position: absolute;
+    width: 250px;
+    padding-top: 10px;
     z-index: 1000;
 }

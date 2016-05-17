@@ -48,34 +48,54 @@
                             <div id="dod-mapFrame">
                         <![endif]-->  
                         <![if !IE]><div id="dod-mapFrame"><![endif]>
-                            <span id="loading" class="glyphicon glyphicon-refresh">Loading... data</span>
+                            <div id="loading" class="glyphicon glyphicon-refresh">
+                                Loading... data
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 0em;">
+                                        0%
+                                    </div>
+                                </div>
+                            </div>
                             <div id="dod-chart">
-
-
-                                <!--<div id="dod-map-tooltip">
-                                    <div id="dod-map-tooltipContainer">
-                                        <div class="dod-name"></div>
-                                        <div class="dod-code"></div>
-                                    </div>
-                                </div>-->
                                 <div id="dod-canvas">
-                                    <div id="dod-map-explanation">
-                                        <h4 id="showing-year"></h4>
-                                        <p id="dod-map-explanation-txt"></p>
-                                    </div>
-                                    <div id="dod-map-facts">
-
-                                    </div>
-                                    <div id="dod-map-tooltip" class="panel panel-default">
-                                        <div class="panel-heading">
-                                            <h3 class="panel-title dod-name"></h3>
+                                    <h4 id="showing-year"></h4>
+                                    <div id="dod-map-overlay">
+                                        <div id="dod-map-explanation">
+                                            <p id="dod-map-explanation-txt"></p>
                                         </div>
-                                        <div class="panel-body">
-                                            <div class="xs-col-6 text-uppercase text-bold">Approximated number of Children</div>
-                                            <div id="dod-children" class="xs-col-6"></div>
+                                        <div id="dod-map-facts">
+
+                                        </div>
+                                        <div id="dod-map-tooltip" class="panel panel-default">
+                                            <div class="panel-heading">
+                                                <h3 class="panel-title dod-name"></h3>
+                                            </div>
+                                            <div class="panel-body">
+                                                <div class="xs-col-6 text-uppercase text-bold">Approximated number of Children</div>
+                                                <div id="dod-children" class="xs-col-6"></div>
+                                            </div>
                                         </div>
                                     </div>
-
+                                    <div id="dod-total-overlay">
+                                        <div id="dod-nowcbath-explain">
+                                            The number of children, that either don't have a toilet and/or a bath, or even access to them in some cases is approx. <strong id="dod-nowcbath-total"></strong> see size below
+                                        </div>
+                                        <svg id="dod-nowcbath"></svg>
+                                        <h5 id="dod-size-heading">The size of the circles indicates approx number of children</h5>
+                                        <div id="dod-sizeKey">
+                                            <div style="left:82px;top:10px;width:20px;" class="dod-circleKeyLabel"><span style="left:25px;">100,000</span></div>
+                                            <div style="left:62px;top:72px;" class="dod-circleKeyLabel"><span>1,000</span></div>
+                                            <div style="left:62px;top:87px;" class="dod-circleKeyLabel"><span>100</span></div>
+                                            <svg id="dod-scaleKey"></svg>
+                                        </div>
+                                    </div>
+                                    <div id="dod-split-overlay">
+                                        <div class="explain-txt"><h4>Getting a bath or using the toilet</h4>All the numbers mean, that <strong id="dod-percent-children"></strong>% of the children in Denmark does not have directly access to a toilet or a bath.</div>
+                                        <div id="dod-lbl-wcbath" class="lbl-absolute"></div>
+                                        <div id="dod-lbl-wcorbath" class="lbl-absolute"></div>
+                                        <div id="dod-lbl-nowcorbath" class="lbl-absolute"></div>
+                                        <div id="dod-lbl-nowcandbath" class="lbl-absolute"></div>
+                                    </div>
                                 </div>
                                 <div id="dod-graph-tooltip" class="panel panel-default">
                                     <div class="panel-heading">
@@ -151,12 +171,13 @@
                         }
                         ;
                     },
+                    data_facts: {"2013": {"total": 1881, "percentage": 0.138361624767}, "2014": {"total": 1877, "percentage": 0.13846471621}, "2015": {"total": 1843, "percentage": 0.135989268432}},
                     defaultGravity: 0.1,
                     wc_bath_types: {"1": "Toilet in dwelling & Bathroom in dwelling", "2": "Toilet in dwelling or Bathroom in dwelling", "3": "Toilet outside dwelling or Access to bathroom", "4": "Other/no toilet or No bathroom or access to bathroom"},
                     housing_types: {"1": "Detached houses/farmhouses", "2": "Terraced, linked or semi-detached houses", "3": "Multi-dwelling houses"},
                     current_year: "2013",
                     years: ["2013", "2014", "2015"],
-                    charts: [{"chart": "map", "name": "Country Distribution"}, {"chart": "bobble", "name": "All Sanatories"}, {"chart": "circle", "name": "Type of Sanatory"}, {"chart": "scatter", "name": "Scatter"}],
+                    charts: [{"chart": "map", "name": "Country Distribution"}, {"chart": "bobble", "name": "All Sanatories"}, {"chart": "circle", "name": "Type of Sanatory"}],
                     mapExplainTxt: "The map is showing displaying some basic data for each municipality when hovering over them. You can also zoom or drag the map to find the data of the municipality you want.\n\
                                     <br/><br/> When saying approximated, it is because the families is divinded into groups. They are as follows: <ul><li>0 Children</li><li>1 Child</li><li>2 Children</li><li>3 Children</li><li>4 Children</li><li>5 or Above Children</li></ul>",
                     maxValueForYear: function (year) {
@@ -175,6 +196,7 @@
                     },
                     init: function () {
                         var that = this;
+                        d3.select(".progress-bar").style("width", "25em").style("min-width", "25em").html("25%");
                         d3.select('#showing-year').html("Showing data for year " + this.current_year);
                         this.svg = d3.select("#dod-canvas")
                                 .append("svg:svg")
@@ -204,6 +226,23 @@
                             var x = d3.scale.quantize().domain([0, that.maxNodeChild - 20000]).range([0, 1, 2, 3, 4]);
                             return this.fillColor(x(d.approx));
                         };
+
+                        d3.select("#dod-lbl-wcbath")
+                                .style('top', (that.centerY - 200) + "px")
+                                .style('left', 850 + "px")
+                                .html(that.wc_bath_types["1"]);
+                        d3.select("#dod-lbl-wcorbath")
+                                .style('top', (that.centerY - 200) + "px")
+                                .style('left', 120 + "px")
+                                .html(that.wc_bath_types["2"]);
+                        d3.select("#dod-lbl-nowcorbath")
+                                .style('top', (that.centerY + 50) + "px")
+                                .style('left', 700 + "px")
+                                .html(that.wc_bath_types["3"]);
+                        d3.select("#dod-lbl-nowcandbath")
+                                .style('top', (that.centerY) + "px")
+                                .style('left', 175 + "px")
+                                .html(that.wc_bath_types["4"]);
                     },
                     loadMunicipality: function () {
                         var that = this;
@@ -211,6 +250,7 @@
                         d3.json('js/IkkeOpdelt.json', function (data) {
                             that.municipality_array = data;
                             that.loadData();
+                            d3.select(".progress-bar").style("width", "50em").style("min-width", "50em").html("50%");
                         });
                     },
                     loadData: function () {
@@ -219,6 +259,7 @@
                             that.municipality_data_array = data;
                             that.generateDataArray();
                             that.loadGeo();
+                            d3.select(".progress-bar").style("width", "75em").style("min-width", "75em").html("75%");
                         });
                     },
                     loadGeo: function () {
@@ -228,6 +269,7 @@
                             that.mapFeatures = json.features;
                             that.setupMap();
                             that.setupCircles();
+                            d3.select(".progress-bar").style("width", "100em").style("min-width", "100em").html("100%");
                             that.$j("#loading").hide();
                         });
                     },
@@ -282,6 +324,23 @@
                         });
 
                         this.nodes = info;
+
+
+                        d3.select("#dod-scaleKey").append("circle")
+                                .attr('r', that.rScale(100000))
+                                .attr('class', "dod-scaleKeyCircle")
+                                .attr('cx', 60)
+                                .attr('cy', 60);
+                        d3.select("#dod-scaleKey").append("circle")
+                                .attr('r', that.rScale(1000))
+                                .attr('class', "dod-scaleKeyCircle")
+                                .attr('cx', 60)
+                                .attr('cy', 80);
+                        d3.select("#dod-scaleKey").append("circle")
+                                .attr('r', that.rScale(100))
+                                .attr('class', "dod-scaleKeyCircle")
+                                .attr('cx', 60)
+                                .attr('cy', 85);
                     },
                     updateCircles: function () {
                         var that = this;
@@ -431,6 +490,7 @@
                         return [bbox.x + bbox.width / 2, bbox.y - 10 + bbox.height / 2];
                     },
                     generateDataArray: function () {
+                        var that = this;
                         this.current_data = [];
                         for (var i = 0; i < this.municipality_data_array.length; i++) {
                             if ("" + this.municipality_data_array[i]['Year'] === "" + this.current_year) {
@@ -441,6 +501,15 @@
                         this.generateNodes();
                         this.generateMapTotals();
                         this.updateCircles();
+
+                        d3.select("#dod-nowcbath circle").remove();
+                        d3.select("#dod-nowcbath").append("circle")
+                                .attr('r', that.rScale(that.data_facts[that.current_year]['total']))
+                                .attr('class', "dod-nowcbath")
+                                .attr('cx', 125)
+                                .attr('cy', 125);
+                        d3.select("#dod-nowcbath-total").html(that.data_facts[that.current_year]['total']);
+                        d3.select("#dod-percent-children").html(that.data_facts[that.current_year]['percentage'].toFixed(3));
                     },
                     getChildrenForCode: function (code) {
                         var children = 0;
@@ -534,24 +603,6 @@
                                 })
                                 .start();
                     },
-                    discretionaryLayout: function () {
-                        var that = this;
-                        this.force
-                                .gravity(0)
-                                .charge(0)
-                                .friction(0.2)
-                                .on("tick", function (e) {
-                                    that.circle
-                                            .each(that.discretionarySort(e.alpha))
-                                            .attr("cx", function (d) {
-                                                return d.x;
-                                            })
-                                            .attr("cy", function (d) {
-                                                return d.y;
-                                            });
-                                })
-                                .start();
-                    },
                     /**
                      * Sortings
                      */
@@ -586,19 +637,6 @@
                             d.x = d.x + (targetX - d.x) * (that.defaultGravity) * alpha * 1.1;
                         };
                     },
-                    discretionarySort: function (alpha) {
-                        var that = this;
-                        return function (d) {
-                            var targetY = that.height / 2;
-                            var targetX = 0;
-
-                            targetX = -300 + Math.random() * 100;
-                            targetY = d.y;
-
-                            d.y = d.y + (targetY - d.y) * Math.sin(Math.PI * (1 - alpha * 10)) * 0.2
-                            d.x = d.x + (targetX - d.x) * Math.sin(Math.PI * (1 - alpha * 10)) * 0.1
-                        };
-                    },
                     buoyancy: function (alpha) {
                         var that = this;
                         return function (d) {
@@ -615,10 +653,11 @@
             dod.setupButtons = function () {
                 return {
                     $j: jQuery,
+                    current_activated: {},
                     init: function () {
                         var that = this;
                         for (var i = 0; i < dod.c.years.length; i++) {
-                            d3.select("#years")
+                            var year = d3.select("#years")
                                     .insert('button')
                                     .attr('type', 'button')
                                     .attr('class', 'btn-year btn btn-default')
@@ -628,26 +667,33 @@
                                         var year = d3.select(this).attr('data-year');
                                         var activeClass = "active";
                                         var alreadyIsActive = d3.select(this).classed(activeClass);
+
                                         // set active year button
                                         d3.selectAll(".btn-year")
                                                 .classed(activeClass, false);
                                         d3.select(this).classed(activeClass, !alreadyIsActive);
                                         dod.c.current_year = year;
                                         dod.c.generateDataArray();
+                                        that.current_activated();
                                         d3.select('#showing-year').html("Showing data for year " + year);
                                     });
+
+                            if (i === 0) {
+                                year.classed('active', true);
+                            }
                         }
 
                         d3.select("#charts")
                                 .insert('button')
                                 .attr('type', 'button')
-                                .attr('class', 'btn-chart btn btn-default')
+                                .attr('class', 'btn-chart btn btn-default active')
                                 .attr('data-chart', dod.c.charts[0].chart)
                                 .html(dod.c.charts[0].name)
                                 .on('click', function () {
                                     var year = d3.select(this).attr('data-chart');
                                     var activeClass = "active";
                                     var alreadyIsActive = d3.select(this).classed(activeClass);
+
                                     // set active year button
                                     d3.selectAll(".btn-chart")
                                             .classed(activeClass, false);
@@ -655,6 +701,9 @@
 
                                     that.hideCircles();
                                     that.showMap();
+                                    that.hideSplit();
+                                    that.hideTotal();
+                                    that.current_activated = function () {};
                                 });
                         d3.select("#charts")
                                 .insert('button')
@@ -672,6 +721,8 @@
                                     d3.select(this).classed(activeClass, !alreadyIsActive);
                                     that.showCircles();
                                     that.hideMap();
+                                    that.hideSplit();
+                                    that.showTotal();
 
                                     if (dod.c.nodes.length === 0) {
                                         dod.c.generateNodes();
@@ -679,6 +730,11 @@
 
                                     dod.c.updateCircles();
                                     dod.c.totalLayout();
+
+                                    that.current_activated = function () {
+                                        dod.c.start();
+                                        dod.c.totalLayout();
+                                    };
                                 });
 
                         d3.select("#charts")
@@ -697,49 +753,47 @@
                                     d3.select(this).classed(activeClass, !alreadyIsActive);
                                     that.showCircles();
                                     that.hideMap();
+                                    that.hideTotal();
+                                    that.showSplit();
 
                                     if (dod.c.nodes.length === 0) {
                                         dod.c.generateNodes();
                                     }
                                     dod.c.updateCircles();
                                     dod.c.sanatoryLayout();
+
+
+                                    that.current_activated = function () {
+                                        dod.c.start();
+                                        dod.c.sanatoryLayout();
+                                    };
                                 });
 
-                        d3.select("#charts")
-                                .insert('button')
-                                .attr('type', 'button')
-                                .attr('class', 'btn-chart btn btn-default')
-                                .attr('data-chart', dod.c.charts[3].chart)
-                                .html(dod.c.charts[3].name)
-                                .on('click', function () {
-                                    var year = d3.select(this).attr('data-chart');
-                                    var activeClass = "active";
-                                    var alreadyIsActive = d3.select(this).classed(activeClass);
-                                    // set active year button
-                                    d3.selectAll(".btn-chart")
-                                            .classed(activeClass, false);
-                                    d3.select(this).classed(activeClass, !alreadyIsActive);
-                                    that.showCircles();
-                                    that.hideMap();
+                        that.hideSplit();
+                        that.hideTotal();
 
-                                    if (dod.c.nodes.length === 0) {
-                                        dod.c.generateNodes();
-                                    }
-                                    dod.c.updateCircles();
-                                    dod.c.discretionaryLayout();
-                                });
                     },
                     hideMap: function () {
                         dod.c.mapCountour.transition().style("opacity", 0);
-                        this.$j("#dod-map-explanation").hide();
-                        this.$j("#dod-map-facts").hide();
+                        this.$j("#dod-map-overlay").hide();
                         this.$j("#dod-map-tooltip").css("opacity", 0).hide();
                     },
                     showMap: function () {
                         dod.c.mapCountour.transition().style("opacity", 1);
-                        this.$j("#dod-map-explanation").show();
-                        this.$j("#dod-map-facts").show();
+                        this.$j("#dod-map-overlay").show();
                         this.$j("#dod-map-tooltip").css("opacity", 1);
+                    },
+                    showSplit: function () {
+                        this.$j("#dod-split-overlay").show();
+                    },
+                    hideSplit: function () {
+                        this.$j("#dod-split-overlay").hide();
+                    },
+                    showTotal: function () {
+                        this.$j("#dod-total-overlay").show();
+                    },
+                    hideTotal: function () {
+                        this.$j("#dod-total-overlay").hide();
                     },
                     hideCircles: function () {
                         d3.selectAll("circle").transition().attr("visibility", "hidden");
