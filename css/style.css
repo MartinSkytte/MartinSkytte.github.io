@@ -178,3 +178,7 @@
     padding-top: 10px;
     z-index: 1000;
 }
+
+.padding-10 {
+    padding: 10px;
+}
