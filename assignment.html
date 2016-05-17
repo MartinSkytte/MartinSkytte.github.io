@@ -10,6 +10,7 @@
         <!-- Bootstrap -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" >
         <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/bootstrap-magnify.min.css">
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -18,290 +19,408 @@
           <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
         <![endif]-->    
     </head>
-    <body>
-        <div class="container">
-            <h1>Data of Denmark</h1>
-            <div class="row">
-                <div class="text-center col-sm-offset-3 col-sm-6">
-                    <div class="btn-group center-block" role="group" id="charts">
-
+    <body id="page-top">
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header page-scroll">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand page-scroll" href="#page-top">The bath and toilet facilities of Denmark</a>
+                </div>
+                <div class="container">
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="nav navbar-nav">
+                            <li><a class="page-scroll" href="#why-data">Why this data?</a></li>
+                            <li><a class="page-scroll" href="#know-data">Know the data</a></li>
+                            <li><a class="page-scroll" href="#data-famalies">Families without toilet or bath</a></li>
+                            <li><a class="page-scroll" href="#lack-data">What is missing toilet or bath?</a></li>
+                            <li><a class="page-scroll" href="#machine-data">Learning from data</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
+        </nav>
+        <div class="container-fluid">
+            <h1>Data of Denmark</h1>
             <div class="row">
-                <div class="col-xs-12">
-                    <div style="dod">
-                        <!--[if IE 6]>
-                            <div id="dod-error">
-                            <p>This interactive graphic requires a browser with SVG support, such as <a href="http://www.google.com/chrome">Chrome</a>, <a href="http://www.mozilla.org/en-US/firefox/">Firefox</a>, <a href="http://www.apple.com/safari/download/">Safari</a> or the latest <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home">Internet Explorer 9</a>. </p>
-                            <div id="dod-mapFrame" style="display:none;">
-                        <![endif]-->
-                        <!--[if IE 7]>
-                            <div id="dod-error">
-                            <p>This interactive graphic requires a browser with SVG support, such as <a href="http://www.google.com/chrome">Chrome</a>, <a href="http://www.mozilla.org/en-US/firefox/">Firefox</a>, <a href="http://www.apple.com/safari/download/">Safari</a> or the latest <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home">Internet Explorer 9</a>. </p>
-                            <div id="dod-mapFrame" style="display:none;">
-                        <![endif]-->
-                        <!--[if IE 8]>
-                            <div id="dod-error">
-                            <p>This interactive graphic requires a browser with SVG support, such as <a href="http://www.google.com/chrome">Chrome</a>, <a href="http://www.mozilla.org/en-US/firefox/">Firefox</a>, <a href="http://www.apple.com/safari/download/">Safari</a> or the latest <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home">Internet Explorer 9</a>. </p>
-                            <div id="dod-mapFrame" style="display:none;">
-                        <![endif]-->
-                        <!--[if IE 9]>
-                            <div id="dod-mapFrame">
-                        <![endif]-->  
-                        <![if !IE]><div id="dod-mapFrame"><![endif]>
-                            <div id="loading" class="glyphicon glyphicon-refresh">
-                                Loading... data
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 0em;">
-                                        0%
+                <div class="col-xs-4" style="height:100%;">
+                    <div id="why-data" class="panel panel-default" style="height:100%;">
+                        <div class="panel-heading">Why this data and presentation</div>
+                        <div class="panel-body">
+                            <p>
+                                We have found a data set containing the living conditions of families in Denmark. 
+                                The data set i divided in districts, type of resident, type of dwelling, heating, toilet facilities, bath facilities, 
+                                type of household and number of children through the years of 2010-2016
+                            </p>
+                            <p>
+                                We have chosen to use this dataset because we both live in Denmark, and are intrigued that there might still be 
+                                places in Denmark where children are living and they don't have access to either bath or toilet.
+                            </p>
+                            <p>
+                                We want to show the progress of living standards in Denmark, and how it have changed through the years.
+                            </p>
+                            <p>
+                                We have chosen to present the data through, an interactive graph with the main numbers for the whole country,
+                                this is done because it gives a good overview over the numbers and explains the basics.
+                            </p>
+                            <p>
+                                We have then made some interactive diagrams, where the main data is done with circles. This is done so the user easily can
+                                get an overview of the main points of the dataset and see the relation through the size and keywords and metrics shown
+                                at either side of the circle.
+                            </p>
+                            <p>
+                                For showing the main categories of the dataset, there is a last interactive button that divides the data into the four main
+                                categories. Again keeping the circles, this is done so the user easy can see the difference in sizes of the different 
+                                numbers. But the grouping also gives great visual clues about the actual grouping so the different groups easily can be seen.
+                            </p>
+                            <p>
+                                For the rest of the data it is shown, in classic graph with some explanatory text, for the people who want to know more about
+                                how and why the data comes to live. This also shows the user some of the fun facts about the data.
+                            </p>
+                            <p>
+                                You can get the underlying dataset here: <a class="btn btn-primary" href="#">Get the data</a> - 
+                                <a class="btn btn-success" href="#">Get the data processing</a>
+                            </p>
+                            <div style="height:44px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-8">
+                    <div id="know-data" class="panel panel-default">
+                        <div class="panel-heading">Getting to know the data</div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="text-center col-sm-offset-3 col-sm-6">
+                                    <div class="btn-group center-block" role="group" id="charts">
+
                                     </div>
                                 </div>
                             </div>
-                            <div id="dod-chart">
-                                <div id="dod-canvas">
-                                    <h4 id="showing-year"></h4>
-                                    <div id="dod-map-overlay">
-                                        <div id="dod-map-explanation">
-                                            <p id="dod-map-explanation-txt"></p>
-                                        </div>
-                                        <div id="dod-map-facts">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div style="dod">
+                                        <!--[if IE 6]>
+                                            <div id="dod-error">
+                                            <p>This interactive graphic requires a browser with SVG support, such as <a href="http://www.google.com/chrome">Chrome</a>, <a href="http://www.mozilla.org/en-US/firefox/">Firefox</a>, <a href="http://www.apple.com/safari/download/">Safari</a> or the latest <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home">Internet Explorer 9</a>. </p>
+                                            <div id="dod-mapFrame" style="display:none;">
+                                        <![endif]-->
+                                        <!--[if IE 7]>
+                                            <div id="dod-error">
+                                            <p>This interactive graphic requires a browser with SVG support, such as <a href="http://www.google.com/chrome">Chrome</a>, <a href="http://www.mozilla.org/en-US/firefox/">Firefox</a>, <a href="http://www.apple.com/safari/download/">Safari</a> or the latest <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home">Internet Explorer 9</a>. </p>
+                                            <div id="dod-mapFrame" style="display:none;">
+                                        <![endif]-->
+                                        <!--[if IE 8]>
+                                            <div id="dod-error">
+                                            <p>This interactive graphic requires a browser with SVG support, such as <a href="http://www.google.com/chrome">Chrome</a>, <a href="http://www.mozilla.org/en-US/firefox/">Firefox</a>, <a href="http://www.apple.com/safari/download/">Safari</a> or the latest <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home">Internet Explorer 9</a>. </p>
+                                            <div id="dod-mapFrame" style="display:none;">
+                                        <![endif]-->
+                                        <!--[if IE 9]>
+                                            <div id="dod-mapFrame">
+                                        <![endif]-->  
+                                        <![if !IE]><div id="dod-mapFrame"><![endif]>
+                                            <div id="loading" class="glyphicon glyphicon-refresh">
+                                                Loading... data
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 0em;">
+                                                        0%
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="dod-chart">
+                                                <div id="dod-canvas">
+                                                    <h4 id="showing-year"></h4>
+                                                    <div id="dod-map-overlay">
+                                                        <div id="dod-map-explanation">
+                                                            <p id="dod-map-explanation-txt"></p>
+                                                        </div>
+                                                        <div id="dod-map-facts">
 
-                                        </div>
-                                        <div id="dod-map-tooltip" class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title dod-name"></h3>
+                                                        </div>
+                                                        <div id="dod-map-tooltip" class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                <h3 class="panel-title dod-name"></h3>
+                                                            </div>
+                                                            <div class="panel-body">
+                                                                <div class="xs-col-6 text-uppercase text-bold">Approximated number of Children</div>
+                                                                <div id="dod-children" class="xs-col-6"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div id="dod-total-overlay">
+                                                        <div id="dod-nowcbath-explain">
+                                                            The number of children, that either don't have a toilet and/or a bath, or even access to them in some cases is approx. <strong id="dod-nowcbath-total"></strong> see size below
+                                                        </div>
+                                                        <svg id="dod-nowcbath"></svg>
+                                                        <h5 id="dod-size-heading">The size of the circles indicates approx number of children</h5>
+                                                        <div id="dod-sizeKey">
+                                                            <div style="left:82px;top:10px;width:20px;" class="dod-circleKeyLabel"><span style="left:25px;">100,000</span></div>
+                                                            <div style="left:62px;top:72px;" class="dod-circleKeyLabel"><span>1,000</span></div>
+                                                            <div style="left:62px;top:87px;" class="dod-circleKeyLabel"><span>100</span></div>
+                                                            <svg id="dod-scaleKey"></svg>
+                                                        </div>
+                                                    </div>
+                                                    <div id="dod-split-overlay">
+                                                        <div class="explain-txt"><h4>Getting a bath or using the toilet</h4>All the numbers mean, that <strong id="dod-percent-children"></strong>% of the children in Denmark does not have directly access to a toilet or a bath.</div>
+                                                        <div id="dod-lbl-wcbath" class="lbl-absolute"></div>
+                                                        <div id="dod-lbl-wcorbath" class="lbl-absolute"></div>
+                                                        <div id="dod-lbl-nowcorbath" class="lbl-absolute"></div>
+                                                        <div id="dod-lbl-nowcandbath" class="lbl-absolute"></div>
+                                                    </div>
+                                                </div>
+                                                <div id="dod-graph-tooltip" class="panel panel-default">
+                                                    <div class="panel-heading">
+                                                        <h3 class="panel-title dod-graph-name"></h3>
+                                                    </div>
+                                                    <div class="panel-body">
+                                                        <div class="text-uppercase text-bold">Type of Housing</div>
+                                                        <div id="dod-graph-house"></div>
+                                                        <div class="text-uppercase text-bold">Type of WC/Bath</div>
+                                                        <div id="dod-graph-wcbath"></div>
+                                                        <div class="text-uppercase text-bold">Approx. Number of Children</div>
+                                                        <div id="dod-graph-children"></div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="panel-body">
-                                                <div class="xs-col-6 text-uppercase text-bold">Approximated number of Children</div>
-                                                <div id="dod-children" class="xs-col-6"></div>
-                                            </div>
                                         </div>
-                                    </div>
-                                    <div id="dod-total-overlay">
-                                        <div id="dod-nowcbath-explain">
-                                            The number of children, that either don't have a toilet and/or a bath, or even access to them in some cases is approx. <strong id="dod-nowcbath-total"></strong> see size below
-                                        </div>
-                                        <svg id="dod-nowcbath"></svg>
-                                        <h5 id="dod-size-heading">The size of the circles indicates approx number of children</h5>
-                                        <div id="dod-sizeKey">
-                                            <div style="left:82px;top:10px;width:20px;" class="dod-circleKeyLabel"><span style="left:25px;">100,000</span></div>
-                                            <div style="left:62px;top:72px;" class="dod-circleKeyLabel"><span>1,000</span></div>
-                                            <div style="left:62px;top:87px;" class="dod-circleKeyLabel"><span>100</span></div>
-                                            <svg id="dod-scaleKey"></svg>
-                                        </div>
-                                    </div>
-                                    <div id="dod-split-overlay">
-                                        <div class="explain-txt"><h4>Getting a bath or using the toilet</h4>All the numbers mean, that <strong id="dod-percent-children"></strong>% of the children in Denmark does not have directly access to a toilet or a bath.</div>
-                                        <div id="dod-lbl-wcbath" class="lbl-absolute"></div>
-                                        <div id="dod-lbl-wcorbath" class="lbl-absolute"></div>
-                                        <div id="dod-lbl-nowcorbath" class="lbl-absolute"></div>
-                                        <div id="dod-lbl-nowcandbath" class="lbl-absolute"></div>
                                     </div>
                                 </div>
-                                <div id="dod-graph-tooltip" class="panel panel-default">
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title dod-graph-name"></h3>
-                                    </div>
-                                    <div class="panel-body">
-                                        <div class="text-uppercase text-bold">Type of Housing</div>
-                                        <div id="dod-graph-house"></div>
-                                        <div class="text-uppercase text-bold">Type of WC/Bath</div>
-                                        <div id="dod-graph-wcbath"></div>
-                                        <div class="text-uppercase text-bold">Approx. Number of Children</div>
-                                        <div id="dod-graph-children"></div>
+                            </div>
+                            <div class="row">
+                                <div class="text-center col-sm-offset-4 col-sm-4">
+                                    <div class="btn-group center-block" role="group" id="years">
+
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="text-center col-sm-offset-4 col-sm-4">
-                    <div class="btn-group center-block" role="group" id="years">
-
                     </div>
                 </div>
             </div>
         </div>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-xs-6">
-                    <img src="img/houses-bath-families.png" class="img-responsive center-block">
+        <div id="data-famalies" class="col-xs-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">What are the families living without? Baths? or Toilets?</div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-6 no-padding">
+                            <img src="img/houses-bath-families.jpg" class="img-responsive center-block">
+                        </div>
+                        <div class="col-xs-6 no-padding">
+                            <img src="img/houses-toi-families.jpg" class="img-responsive center-block">
+                        </div>
+                        <div class="col-xs-12">
+                            From the graph with number of families without bath, it is easy to see that the majority of families without bath have zero children, but the overall number of families are getting lower each year, which means that the living standards are improving. 
+                            If we look at the graph with number of families without toilets, it is again the families without children that is the majority, but the number of overall families are lower in 2015 than in 2010, but in 2013 it was even lower than in 2015.
+                            By looking at both graphs there are a lot more families that dont have bathrooms than toilets, which means that people usually chose to have a toilet from a bathroom.
+                        </div>
+                    </div>                
                 </div>
-                <div class="col-xs-6">
-                    <img src="img/houses-toi-families.png" class="img-responsive center-block">
-                </div>
-                <div class="col-xs-offset-3 col-xs-6">
-                    From the graph with number of families without bath, it is easy to see that the majority of families without bath have zero children, but the overall number of families are getting lower each year, which means that the living standards are improving. 
-                    If we look at the graph with number of families without toilets, it is again the families without children that is the majority, but the number of overall families are lower in 2015 than in 2010, but in 2013 it was even lower than in 2015.
-                    By looking at both graphs there are a lot more families that dont have bathrooms than toilets, which means that people usually chose to have a toilet from a bathroom.
-                </div>
-                <div class="col-xs-offset-1 col-xs-10 text-center">
-                    <ul class="nav nav-tabs">
-                        <li class="active"><a data-toggle="tab" href="#2010-families">2010</a></li>
-                        <li><a data-toggle="tab" href="#2011-families">2011</a></li>
-                        <li><a data-toggle="tab" href="#2012-families">2012</a></li>
-                        <li><a data-toggle="tab" href="#2013-families">2013</a></li>
-                        <li><a data-toggle="tab" href="#2014-families">2014</a></li>
-                        <li><a data-toggle="tab" href="#2015-families">2015</a></li>
-                    </ul>
+            </div>
+        </div>
+        <div class="col-xs-12">
+            <div id="lack-data" class="panel panel-default">
+                <div class="panel-heading">Where does the houses and apartments lack toilets or baths</div>
+                <div class="panel-body">
+                    <div class="col-xs-2">
+                        <p>
+                            Seen from the graphs with percentage of houses without toilets or bath through the years, Copenhagen and Frederiksberg are 
+                            the places with the highest number. It is also possible to see that both places have improved through the years, but are still more than 
+                            double as high as the area in number 3. This also makes sense since both Copenhagen and Frederiksberg both have a high population within 
+                            a smaller area with a lot of apartments.
+                        </p>
+                        <p>
+                            If we look at the areas with the lowest percentage Vallensbæk, Ishøj and Ballerup they all are quite close to 0, with Vallensbæk 
+                            being the lowest through the year.
+                        </p>
+                        <p>
+                            Click on the year to get the data for the year selected.
+                        </p>
+                    </div>
+                    <div class="col-xs-10">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#2010-families">2010</a></li>
+                            <li><a data-toggle="tab" href="#2011-families">2011</a></li>
+                            <li><a data-toggle="tab" href="#2012-families">2012</a></li>
+                            <li><a data-toggle="tab" href="#2013-families">2013</a></li>
+                            <li><a data-toggle="tab" href="#2014-families">2014</a></li>
+                            <li><a data-toggle="tab" href="#2015-families">2015</a></li>
+                        </ul>
 
-                    <div class="tab-content">
-                        <div id="2010-families" class="tab-pane fade in active">
-                            <div class="row padding-10">
-                                <div class="col-xs-10">
-                                    <img src="img/percentage2010.png" class="img-responsive center-block">
-                                </div>
-                                <div class="col-xs-2">
-                                    <strong>5 highest</strong>
-                                    <ol>
-                                        <li>København</li>
-                                        <li>Frederiksberg</li>
-                                        <li>Vordingborg</li>
-                                        <li>Guldborgsund</li>
-                                        <li>Odsherred</li>
-                                    </ol>
-                                    <strong>5 lowest</strong>
-                                    <ol>
-                                        <li>Vallensbæk</li>
-                                        <li>Ishøj</li>
-                                        <li>Ballerup</li>
-                                        <li>Brøndby</li>
-                                        <li>Egedal</li>
-                                    </ol>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="2011-families" class="tab-pane fade">
-                            <div class="row padding-10">
-                                <div class="col-xs-10">
-                                    <img src="img/percentage2011.png" class="img-responsive center-block">
-                                </div>
-                                <div class="col-xs-2">
-                                    <strong>5 highest</strong>
-                                    <ol>
-                                        <li>København</li>
-                                        <li>Frederiksberg</li>
-                                        <li>Guldborgsund</li>
-                                        <li>Vordingborg</li>
-                                        <li>Odsherred</li>
-                                    </ol>
-                                    <strong>5 lowest</strong>
-                                    <ol>
-                                        <li>Vallensbæk</li>
-                                        <li>Ishøj</li>
-                                        <li>Brøndby</li>
-                                        <li>Ballerup</li>
-                                        <li>Egedal</li>
-                                    </ol>
+                        <div class="tab-content">
+                            <div id="2010-families" class="tab-pane fade in active">
+                                <div class="row padding-10">
+                                    <div class="col-xs-10 no-padding">
+                                        <img src="img/percentage2010.jpg" class="img-responsive center-block">
+                                    </div>
+                                    <div class="col-xs-2" style="padding-top: 50px;">
+                                        <strong>5 highest</strong>
+                                        <ol>
+                                            <li>København</li>
+                                            <li>Frederiksberg</li>
+                                            <li>Vordingborg</li>
+                                            <li>Guldborgsund</li>
+                                            <li>Odsherred</li>
+                                        </ol>
+                                        <strong>5 lowest</strong>
+                                        <ol>
+                                            <li>Vallensbæk</li>
+                                            <li>Ishøj</li>
+                                            <li>Ballerup</li>
+                                            <li>Brøndby</li>
+                                            <li>Egedal</li>
+                                        </ol>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div id="2012-families" class="tab-pane fade">
-                            <div class="row padding-10">
-                                <div class="col-xs-10">
-                                    <img src="img/percentage2012.png" class="img-responsive center-block">
-                                </div>
-                                <div class="col-xs-2">
-                                    <strong>5 highest</strong>
-                                    <ol>
-                                        <li>København</li>
-                                        <li>Frederiksberg</li>
-                                        <li>Guldborgsund</li>
-                                        <li>Gentofte</li>
-                                        <li>Morsø</li>
-                                    </ol>
-                                    <strong>5 lowest</strong>
-                                    <ol>
-                                        <li>Vallensbæk</li>
-                                        <li>Ishøj</li>
-                                        <li>Ballerup</li>
-                                        <li>Brøndby</li>
-                                        <li>Egedal</li>
-                                    </ol>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="2013-families" class="tab-pane fade">
-                            <div class="row padding-10">
-                                <div class="col-xs-10">
-                                    <img src="img/percentage2013.png" class="img-responsive center-block">
-                                </div>
-                                <div class="col-xs-2">
-                                    <strong>5 highest</strong>
-                                    <ol>
-                                        <li>København</li>
-                                        <li>Frederiksberg</li>
-                                        <li>Guldborgsund</li>
-                                        <li>Morsø</li>
-                                        <li>Gentofte</li>
-                                    </ol>
-                                    <strong>5 lowest</strong>
-                                    <ol>
-                                        <li>Vallensbæk</li>
-                                        <li>Ishøj</li>
-                                        <li>Ballerup</li>
-                                        <li>Brøndby</li>
-                                        <li>Greve</li>
-                                    </ol>
+                            <div id="2011-families" class="tab-pane fade">
+                                <div class="row padding-10">
+                                    <div class="col-xs-10 no-padding">
+                                        <img src="img/percentage2011.jpg" class="img-responsive center-block">
+                                    </div>
+                                    <div class="col-xs-2" style="padding-top: 50px;">
+                                        <strong>5 highest</strong>
+                                        <ol>
+                                            <li>København</li>
+                                            <li>Frederiksberg</li>
+                                            <li>Guldborgsund</li>
+                                            <li>Vordingborg</li>
+                                            <li>Odsherred</li>
+                                        </ol>
+                                        <strong>5 lowest</strong>
+                                        <ol>
+                                            <li>Vallensbæk</li>
+                                            <li>Ishøj</li>
+                                            <li>Brøndby</li>
+                                            <li>Ballerup</li>
+                                            <li>Egedal</li>
+                                        </ol>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div id="2014-families" class="tab-pane fade">
-                            <div class="row padding-10">
-                                <div class="col-xs-10">
-                                    <img src="img/percentage2014.png" class="img-responsive center-block">
-                                </div>
-                                <div class="col-xs-2">
-                                    <strong>5 highest</strong>
-                                    <ol>
-                                        <li>København</li>
-                                        <li>Frederiksberg</li>
-                                        <li>Lolland</li>
-                                        <li>Guldborgsund</li>
-                                        <li>Morsø</li>
-                                    </ol>
-                                    <strong>5 lowest</strong>
-                                    <ol>
-                                        <li>Vallensbæk</li>
-                                        <li>Ballerup</li>
-                                        <li>Ishøj</li>
-                                        <li>Brøndby</li>
-                                        <li>Greve</li>
-                                    </ol>
+                            <div id="2012-families" class="tab-pane fade">
+                                <div class="row padding-10">
+                                    <div class="col-xs-10 no-padding">
+                                        <img src="img/percentage2012.jpg" class="img-responsive center-block">
+                                    </div>
+                                    <div class="col-xs-2" style="padding-top: 50px;">
+                                        <strong>5 highest</strong>
+                                        <ol>
+                                            <li>København</li>
+                                            <li>Frederiksberg</li>
+                                            <li>Guldborgsund</li>
+                                            <li>Gentofte</li>
+                                            <li>Morsø</li>
+                                        </ol>
+                                        <strong>5 lowest</strong>
+                                        <ol>
+                                            <li>Vallensbæk</li>
+                                            <li>Ishøj</li>
+                                            <li>Ballerup</li>
+                                            <li>Brøndby</li>
+                                            <li>Egedal</li>
+                                        </ol>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div id="2015-families" class="tab-pane fade">
-                            <div class="row padding-10">
-                                <div class="col-xs-10">
-                                    <img src="img/percentage2015.png" class="img-responsive center-block">
+                            <div id="2013-families" class="tab-pane fade">
+                                <div class="row padding-10">
+                                    <div class="col-xs-10 no-padding">
+                                        <img src="img/percentage2013.jpg" class="img-responsive center-block">
+                                    </div>
+                                    <div class="col-xs-2" style="padding-top: 50px;">
+                                        <strong>5 highest</strong>
+                                        <ol>
+                                            <li>København</li>
+                                            <li>Frederiksberg</li>
+                                            <li>Guldborgsund</li>
+                                            <li>Morsø</li>
+                                            <li>Gentofte</li>
+                                        </ol>
+                                        <strong>5 lowest</strong>
+                                        <ol>
+                                            <li>Vallensbæk</li>
+                                            <li>Ishøj</li>
+                                            <li>Ballerup</li>
+                                            <li>Brøndby</li>
+                                            <li>Greve</li>
+                                        </ol>
+                                    </div>
                                 </div>
-                                <div class="col-xs-2">
-                                    <strong>5 highest</strong>
-                                    <ol>
-                                        <li>København</li>
-                                        <li>Frederiksberg</li>
-                                        <li>Guldborgsund</li>
-                                        <li>Lolland</li>
-                                        <li>Morsø</li>
-                                    </ol>
-                                    <strong>5 lowest</strong>
-                                    <ol>
-                                        <li>Vallensbæk</li>
-                                        <li>Ishøj</li>
-                                        <li>Ballerup</li>
-                                        <li>Brøndby</li>
-                                        <li>Greve</li>
-                                    </ol>
+                            </div>
+                            <div id="2014-families" class="tab-pane fade">
+                                <div class="row padding-10">
+                                    <div class="col-xs-10 no-padding">
+                                        <img src="img/percentage2014.jpg" class="img-responsive center-block">
+                                    </div>
+                                    <div class="col-xs-2" style="padding-top: 50px;">
+                                        <strong>5 highest</strong>
+                                        <ol>
+                                            <li>København</li>
+                                            <li>Frederiksberg</li>
+                                            <li>Lolland</li>
+                                            <li>Guldborgsund</li>
+                                            <li>Morsø</li>
+                                        </ol>
+                                        <strong>5 lowest</strong>
+                                        <ol>
+                                            <li>Vallensbæk</li>
+                                            <li>Ballerup</li>
+                                            <li>Ishøj</li>
+                                            <li>Brøndby</li>
+                                            <li>Greve</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="2015-families" class="tab-pane fade">
+                                <div class="row padding-10">
+                                    <div class="col-xs-10">
+                                        <img src="img/percentage2015.jpg" class="img-responsive center-block">
+                                    </div>
+                                    <div class="col-xs-2 no-padding" style="padding-top: 50px;">
+                                        <strong>5 highest</strong>
+                                        <ol>
+                                            <li>København</li>
+                                            <li>Frederiksberg</li>
+                                            <li>Guldborgsund</li>
+                                            <li>Lolland</li>
+                                            <li>Morsø</li>
+                                        </ol>
+                                        <strong>5 lowest</strong>
+                                        <ol>
+                                            <li>Vallensbæk</li>
+                                            <li>Ishøj</li>
+                                            <li>Ballerup</li>
+                                            <li>Brøndby</li>
+                                            <li>Greve</li>
+                                        </ol>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+            </div>
+
+        </div>
+        <div class="col-xs-12">
+            <div id="machine-data" class="panel panel-default">
+                <div class="panel-heading">What did the machines tell us</div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-10">
+                            <img class="img-responsive" data-toggle="magnify" src="img/denmark.jpg" alt="">
+                        </div>
+                        <div class="col-xs-2">
+                            Lots of text goes here
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -311,6 +430,9 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
         <!-- Include the d3 lib so we can make cool graphs -->
         <script src="js/d3.min.js"></script>
+        <script src="js/jquery.easing.min.js"></script>
+        <script src="js/scrolling-nav.js"></script>
+        <script src="js/bootstrap-magnify.min.js"></script>
 
         <script type='text/javascript'>
             jQuery.noConflict();
@@ -886,7 +1008,8 @@
                                     that.showMap();
                                     that.hideSplit();
                                     that.hideTotal();
-                                    that.current_activated = function () {};
+                                    that.current_activated = function () {
+                                    };
                                 });
                         d3.select("#charts")
                                 .insert('button')
