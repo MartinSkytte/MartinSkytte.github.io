@@ -45,7 +45,7 @@
             </div>
         </nav>
         <div class="container-fluid">
-            <h1>Data of Denmark</h1>
+            <h1>Bath & Toilet data of Danish homes</h1>
             <div class="row">
                 <div class="col-xs-4" style="height:100%;">
                     <div id="why-data" class="panel panel-default" style="height:100%;">
@@ -414,10 +414,48 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-xs-10">
-                            <img class="img-responsive" data-toggle="magnify" src="img/denmark.jpg" alt="">
+                            <img class="img-responsive" style="margin-top:250px;" data-toggle="magnify" src="img/denmark.jpg" alt="">
                         </div>
                         <div class="col-xs-2">
-                            Lots of text goes here
+                            <p>
+                                The features we have selected are: House type, Area code, Year and WcBath, 
+                                this is hold up against how many children the familie have.
+                                From the Decision tree and Naive Bayes Classifier, we train two models and 
+                                try to predict our test set. The features made are random so that the classifiers 
+                                are not trained on the same data, we run each classifier ten times. This also 
+                                means that the predictions wont the be the same, this is the data when 
+                                we last ran it:
+                            </p>
+                            <p>
+                                <strong>Decision tree classifier</strong>
+                                <br/>
+                                [106462, 101035, 101464, 105698, 106493, 107963, 105756, 101621, 105121, 100169]
+                                <br/>
+                                Number of mislabeled points out of a total 228284 points : 128115
+                                <br/>
+                                Got 45.64 % Correct
+                            </p>
+                            <p>
+                                <strong>Naive Bayes classifier</strong>
+                                <br/>
+                                [109920, 108702, 109511, 109138, 110745, 103957, 109650, 110381, 109928, 98124]
+                                <br/>
+                                Number of mislabeled points out of a total 228284 points : 130160
+                                <br/>
+                                Got 47.31 % Correct
+                            </p>
+                            <p>
+                                <strong>Guessing one every time</strong>
+                                <br/>
+                                [93311, 93524, 95251, 95252, 94181, 91955, 94323, 94552, 94889, 95231]
+                                <br/>
+                                Got 41.28 % Correct
+                            </p>
+                            <p>
+                                This means that the Decision tree and the Naive Bayes classifiers are better 
+                                than guessing the most commen value, but have still guessed less than 
+                                half correct.
+                            </p>
                         </div>
                     </div>
                 </div>
